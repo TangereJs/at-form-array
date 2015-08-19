@@ -1,0 +1,34 @@
+<!doctype html>
+<html>
+
+<head>
+  <title>at-form-array</title>
+
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1, user-scalable=yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+
+  <script src="../webcomponentsjs/webcomponents-lite.js"></script>
+  <link rel="import" href="../polymer/polymer.html" />
+
+  <link rel="import" href="../layout/layout.html" />
+  <link rel="import" href="at-form-array.html" />
+
+</head>
+
+<body>
+  <div horizontal layout>
+    <at-form-array label="Random people" id="atFormArray"></at-form-array>
+  </div>
+
+  <br>
+  <script>
+    document.addEventListener('WebComponentsReady', function() {
+      var atFormArray = document.getElementById('atFormArray');
+    });
+  </script>
+</body>
+
+</html>

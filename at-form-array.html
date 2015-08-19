@@ -1,0 +1,253 @@
+<link rel="import" href="../at-core-theme/at-core-theme.html" />
+<link rel="import" href="../at-form-input/at-form-input.html" />
+
+<dom-module id="at-form-array">
+  <style>
+    .item-action-hidden {
+      display: none;
+    }
+  </style>
+  <template>
+    <div class="field">
+      <div>
+        <label>{{label}}</label>
+      </div>
+      <div>
+        <button id="addItemBtn">Add item</button>
+      </div>
+      <div id="itemsContainer" class="items-container">
+      </div>
+    </div>
+  </template>
+  <script>
+    'use strict';
+    Polymer({
+      is: 'at-form-array',
+      properties: {
+        label: {
+          type: String,
+          value: ''
+        },
+        disabled: {
+          type: Boolean,
+          value: false,
+          observer: 'disabledChanged'
+        },
+        required: {
+          type: Boolean,
+          value: false
+        },
+        value: {
+          type: Array,
+          value: function() {
+            return [];
+          },
+          observer: 'valueChanged'
+        },
+        // *ij* this should be renamed to item schema
+        items: {
+          type: Object,
+          value: function() {
+            return {};
+          },
+          observer: 'itemsChanged'
+        }
+      },
+      _scopeCssViaAttr: true,
+      ready: function() {
+        var self = this;
+        this.$.addItemBtn.addEventListener('click', function(event) {
+          self._addNewItem();
+        });
+      },
+      disabledChanged: function() {},
+      valueChanged: function() {},
+      itemsChanged: function() {},
+      _addNewItem: function() {
+        this.value.push({
+          value: 'new item',
+          position: this.value.length
+        });
+        this._updateItemsContainerHtml();
+      },
+      _removeItem: function(position) {
+        this.value.splice(position, 1);
+
+        for (var i = position; i < this.value.length; i += 1) {
+          var item = this.value[i];
+          item.position -= 1;
+        }
+        this._updateItemsContainerHtml();
+      },
+      _moveItemUp: function(position) {
+        var prev = position - 1;
+        var tmp;
+
+        this.value[position].position -= 1;
+        this.value[prev].position += 1;
+        tmp = this.value[position];
+        this.value[position] = this.value[prev];
+        this.value[prev] = tmp;
+
+        this._updateItemsContainerHtml();
+      },
+      _moveItemDown: function(position) {
+        var next = position + 1;
+        var tmp;
+
+        this.value[position].position += 1;
+        this.value[next].position -= 1;
+        tmp = this.value[position];
+        this.value[position] = this.value[next];
+        this.value[next] = tmp;
+
+        this._updateItemsContainerHtml();
+      },
+      _getPosition: function(button) {
+        var positionAttr = button.getAttribute('data-position');
+        if (positionAttr) {
+          return parseInt(positionAttr);
+        }
+        // this code should never be executed; if its executed there is an error in html
+        console.error('Button doesn\'t have position attribute');
+        return -1;
+      },
+      _updateItemsContainerHtml: function() {
+        var
+          existingItemHtmlArr,
+          valueArrIndex,
+          item,
+          existingItemHtml,
+          newItemHtml;
+
+        // query items container for existing html
+        existingItemHtmlArr = this.$.itemsContainer.querySelectorAll('.item-container');
+
+        // for each entry in this.value array
+        for (valueArrIndex = 0; valueArrIndex < this.value.length; valueArrIndex += 1) {
+          item = this.value[valueArrIndex];
+          existingItemHtml = existingItemHtmlArr[valueArrIndex];
+
+          if (existingItemHtml) {
+            // update existing html if available
+            this._updateItemContainerHtml(existingItemHtml, item);
+          } else {
+            // create new html "item-container" if needed
+            newItemHtml = this._createNewItemHtml(item);
+            this.$.itemsContainer.appendChild(newItemHtml);
+          }
+        }
+
+        // remove exceeding html
+        while (valueArrIndex < existingItemHtmlArr.length) {
+          existingItemHtml = existingItemHtmlArr[valueArrIndex];
+          existingItemHtml.remove();
+          valueArrIndex += 1;
+        }
+      },
+      _createNewItemHtml: function(item) {
+        var self = this;
+        var itemDiv = document.createElement('div');
+        itemDiv.setAttribute('style-scope', 'at-form-array');
+        itemDiv.classList.add('item-container');
+
+        var af = document.createElement('at-form-input');
+        af.setAttribute('style-scope', 'at-form-array');
+        af.setAttribute('data-position', item.position);
+        af.addEventListener('value-changed', function(event) {
+          var position = self._getPosition(event.target);
+          self.value[position].value = event.detail.value;
+        });
+        af.value = item.value;
+        itemDiv.appendChild(af);
+
+        var itemActionsDiv = document.createElement('div');
+        itemActionsDiv.setAttribute('style-scope', 'at-form-array');
+        itemActionsDiv.classList.add('item-actions-container');
+        itemDiv.appendChild(itemActionsDiv);
+
+        var removeBtn = document.createElement('button');
+        removeBtn.setAttribute('style-scope', 'at-form-array');
+        removeBtn.classList.add('action-button');
+        removeBtn.setAttribute('data-action-type', 'remove');
+        removeBtn.setAttribute('data-position', item.position);
+        removeBtn.innerHTML = 'Remove';
+        removeBtn.addEventListener('click', function(event) {
+          var position = self._getPosition(event.target);
+          self._removeItem(position);
+        });
+        itemActionsDiv.appendChild(removeBtn);
+
+
+        var moveUpBtn = document.createElement('button');
+        moveUpBtn.setAttribute('style-scope', 'at-form-array');
+        moveUpBtn.classList.add('action-button');
+        if (item.position === 0) {
+          moveUpBtn.classList.add('item-action-hidden');
+        }
+        moveUpBtn.setAttribute('data-action-type', 'moveup');
+        moveUpBtn.setAttribute('data-position', item.position);
+        moveUpBtn.innerHTML = 'Move Up';
+        moveUpBtn.addEventListener('click', function(event) {
+          var position = self._getPosition(event.target);
+          self._moveItemUp(position);
+        });
+        itemActionsDiv.appendChild(moveUpBtn);
+
+        var moveDownBtn = document.createElement('button');
+        moveDownBtn.setAttribute('style-scope', 'at-form-array');
+        moveDownBtn.classList.add('action-button');
+        if (item.position === this.value.length - 1) {
+          moveDownBtn.classList.add('item-action-hidden');
+        }
+        moveDownBtn.setAttribute('data-action-type', 'movedown');
+        moveDownBtn.setAttribute('data-position', item.position);
+        moveDownBtn.innerHTML = 'Move Down';
+        moveDownBtn.addEventListener('click', function(event) {
+          var position = self._getPosition(event.target);
+          self._moveItemDown(position);
+        });
+        itemActionsDiv.appendChild(moveDownBtn);
+
+        return itemDiv;
+      },
+      _updateItemContainerHtml: function(existingItemHtml, item) {
+        var afInput, actionButotns, actionButtonsIndex, actionButton, moveUpBtn, moveDownBtn;
+
+        afInput = existingItemHtml.querySelector('at-form-input');
+        afInput.value = item.value;
+        actionButotns = existingItemHtml.querySelectorAll('.action-button');
+        for (actionButtonsIndex = 0; actionButtonsIndex < actionButotns.length; actionButtonsIndex += 1) {
+          actionButton = actionButotns[actionButtonsIndex];
+          actionButton.setAttribute('data-position', item.position);
+        }
+
+        moveUpBtn = existingItemHtml.querySelector('[data-action-type="moveup"]');
+        moveDownBtn = existingItemHtml.querySelector('[data-action-type="movedown"]');
+        if (item.position === 0) {
+          moveUpBtn.classList.add('item-action-hidden');
+          if (this.value.length > 1) {
+            moveDownBtn.classList.remove('item-action-hidden');
+          }
+        }
+        if (item.position > 0 && item.position < this.value.length - 1) {
+          moveUpBtn.classList.remove('item-action-hidden');
+          moveDownBtn.classList.remove('item-action-hidden');
+        }
+        if (item.position === this.value.length - 1) {
+          moveDownBtn.classList.add('item-action-hidden');
+        }
+      }
+    });
+  </script>
+</dom-module>
+<!--
+<div class="item-container">
+  <at-form-input></at-form-input>
+  <div class="item-actions-container">
+    <button class="action-button" data-action-type="Remove" data-position="0">Remove</button>
+    <button class="action-button" data-action-type="MoveUp" data-position="0">Move Up</button>
+    <button class="action-button" data-action-type="MoveDown" data-position="0">Move Down</button>
+  </div>
+</div>
+-->
