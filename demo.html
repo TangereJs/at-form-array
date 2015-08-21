@@ -27,6 +27,32 @@
   <script>
     document.addEventListener('WebComponentsReady', function() {
       var atFormArray = document.getElementById('atFormArray');
+
+      atFormArray.schema = {
+        "items": {
+          "type": "object",
+          "properties": {
+            "type": {
+              "type": "string",
+              "enum": [
+                "cat",
+                "dog",
+                "bird",
+                "reptile",
+                "other"
+              ],
+              "default": "dog"
+            },
+            "name": {
+              "type": "string"
+            },
+            "fixed": {
+              "type": "boolean",
+              "title": "spayed / neutered"
+            }
+          }
+        }
+      }
     });
   </script>
 </body>

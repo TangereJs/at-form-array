@@ -1,9 +1,15 @@
 <link rel="import" href="../at-core-theme/at-core-theme.html" />
 <link rel="import" href="../at-form-input/at-form-input.html" />
+<link rel="import" href="../at-form-lookup/at-form-lookup.html" />
+<link rel="import" href="../at-form-checkbox/at-form-checkbox.html" />
 
 <dom-module id="at-form-array">
   <style>
     .item-action-hidden {
+      display: none;
+    }
+
+    .hidden-div {
       display: none;
     }
   </style>
@@ -12,10 +18,15 @@
       <div>
         <label>{{label}}</label>
       </div>
-      <div>
-        <button id="addItemBtn">Add item</button>
+      <div id="schemaAssigned" class="hidden-div">
+        <div>
+          <button id="addItemBtn">Add item</button>
+        </div>
+        <div id="itemsContainer" class="items-container">
+        </div>
       </div>
-      <div id="itemsContainer" class="items-container">
+      <div id="schemaNotAssigned">
+        <p>Schema not assigned.</p>
       </div>
     </div>
   </template>
@@ -44,13 +55,12 @@
           },
           observer: 'valueChanged'
         },
-        // *ij* this should be renamed to item schema
-        items: {
+        schema: {
           type: Object,
           value: function() {
             return {};
           },
-          observer: 'itemsChanged'
+          observer: 'schemaChanged'
         }
       },
       _scopeCssViaAttr: true,
@@ -62,10 +72,16 @@
       },
       disabledChanged: function() {},
       valueChanged: function() {},
-      itemsChanged: function() {},
+      schemaChanged: function(newValue, oldValue) {
+        if (newValue && newValue.items && newValue.items.properties) {
+          this.$.schemaNotAssigned.classList.add('hidden-div');
+          this.$.schemaAssigned.classList.remove('hidden-div');
+        }
+      },
       _addNewItem: function() {
+        var newEntry = this._createNewItemValueEntry(this.schema.items.properties);
         this.value.push({
-          value: 'new item',
+          entry: newEntry,
           position: this.value.length
         });
         this._updateItemsContainerHtml();
@@ -133,7 +149,7 @@
             this._updateItemContainerHtml(existingItemHtml, item);
           } else {
             // create new html "item-container" if needed
-            newItemHtml = this._createNewItemHtml(item);
+            newItemHtml = this._createNewItemContainerHtml(item);
             this.$.itemsContainer.appendChild(newItemHtml);
           }
         }
@@ -145,21 +161,14 @@
           valueArrIndex += 1;
         }
       },
-      _createNewItemHtml: function(item) {
+      _createNewItemContainerHtml: function(item) {
         var self = this;
         var itemDiv = document.createElement('div');
         itemDiv.setAttribute('style-scope', 'at-form-array');
         itemDiv.classList.add('item-container');
 
-        var af = document.createElement('at-form-input');
-        af.setAttribute('style-scope', 'at-form-array');
-        af.setAttribute('data-position', item.position);
-        af.addEventListener('value-changed', function(event) {
-          var position = self._getPosition(event.target);
-          self.value[position].value = event.detail.value;
-        });
-        af.value = item.value;
-        itemDiv.appendChild(af);
+        var itemHtml = this._createItemHtmlFromSchema(this.schema.items.properties, item);
+        itemDiv.appendChild(itemHtml);
 
         var itemActionsDiv = document.createElement('div');
         itemActionsDiv.setAttribute('style-scope', 'at-form-array');
@@ -177,7 +186,6 @@
           self._removeItem(position);
         });
         itemActionsDiv.appendChild(removeBtn);
-
 
         var moveUpBtn = document.createElement('button');
         moveUpBtn.setAttribute('style-scope', 'at-form-array');
@@ -211,11 +219,69 @@
 
         return itemDiv;
       },
+      _createItemHtmlFromSchema(properties, item) {
+        var self = this;
+        var resultHtml = undefined;
+        if (Object.keys(properties).length > 0) {
+          resultHtml = document.createElement('div');
+          resultHtml.classList.add('item');
+
+          for (var propName in properties) {
+            var propDef = properties[propName];
+            var propType = propDef.type;
+
+            if (propType === "string" && propDef.enum) {
+              propType = "enum";
+            }
+
+            var htmlElem = undefined;
+
+            switch (propType) {
+              case "string":
+                htmlElem = document.createElement('at-form-input');
+                htmlElem.value = item.entry[propName];
+                break;
+              case "enum":
+                htmlElem = document.createElement('at-form-lookup');
+                htmlElem.available = propDef.enum.join(",");
+                if (propDef.default) {
+                  htmlElem.value = propDef.default;
+                } else {
+                  htmlElem.value = item.entry[propName];
+                }
+                break;
+              case "boolean":
+                htmlElem = document.createElement('at-form-checkbox');
+                htmlElem.value = item.entry[propName];
+                break;
+            }
+
+            htmlElem.setAttribute('style-scope', 'at-form-array');
+            htmlElem.setAttribute('data-position', item.position);
+            htmlElem.setAttribute('data-name', propName);
+            htmlElem.classList.add('item-property');
+            if (propDef.title) {
+              htmlElem.label = propDef.title;
+            } else {
+              htmlElem.label = propName;
+            }
+            Polymer.dom(resultHtml).appendChild(htmlElem);
+            htmlElem.addEventListener('value-changed', function(event) {
+              var position = self._getPosition(event.target);
+              var property = event.target.getAttribute('data-name');
+              var value = event.detail.value;
+              self._updateItemValueEntry(position, property, value);
+            });
+          }
+        }
+        return resultHtml;
+      },
       _updateItemContainerHtml: function(existingItemHtml, item) {
         var afInput, actionButotns, actionButtonsIndex, actionButton, moveUpBtn, moveDownBtn;
 
-        afInput = existingItemHtml.querySelector('at-form-input');
-        afInput.value = item.value;
+        var itemHtml = existingItemHtml.querySelector('.item');
+        this._updateItemHtml(itemHtml, item);
+
         actionButotns = existingItemHtml.querySelectorAll('.action-button');
         for (actionButtonsIndex = 0; actionButtonsIndex < actionButotns.length; actionButtonsIndex += 1) {
           actionButton = actionButotns[actionButtonsIndex];
@@ -237,6 +303,47 @@
         if (item.position === this.value.length - 1) {
           moveDownBtn.classList.add('item-action-hidden');
         }
+      },
+      _updateItemHtml: function(existingItemHtml, item) {
+        var properties = existingItemHtml.querySelectorAll('.item-property');
+        var index, prop;
+        for (index = 0; index < properties.length; index += 1) {
+          prop = properties[index];
+          prop.value = item.entry[prop.getAttribute('data-name')];
+          prop.setAttribute('data-position', item.position);
+        }
+      },
+      _createNewItemValueEntry: function(properties) {
+        var result = {};
+
+        for (var propName in properties) {
+          var propDef = properties[propName];
+          var propType = propDef.type;
+
+          if (propType === "string" && propDef.enum) {
+            propType = "enum";
+          }
+
+          if (propType === "boolean") {
+            result[propName] = false;
+          } else if (propType === "enum") {
+            if (propDef.default) {
+              result[propName] = propDef.default;
+            } else {
+              result[propName] = "";
+            }
+          } else {
+            result[propName] = "";
+          }
+        }
+
+        return result;
+      },
+      _updateItemValueEntry: function(position, property, value) {
+        this.value[position].entry[property] = value;
+      },
+      _removeItemValueEntry: function(position) {
+        this.value.splice(position, 1);
       }
     });
   </script>
