@@ -70,8 +70,43 @@
           self._addNewItem();
         });
       },
-      disabledChanged: function() {},
-      valueChanged: function() {},
+      disabledChanged: function(newValue, oldValue) {
+        /* ij - to easily and quickly select all elements that need to be disabled
+          each at-form-* element is assigned data-tagname attribute with value of elements tag name
+          ie. at-form-input element would have data-tagname="at-form-input" set
+          now all at-form-* elements can be selected with [data-tagname^="at-form-"] selector
+        */
+        var afNodeList = Polymer.dom(this.root).querySelectorAll('[data-tagname^="at-form-"]'),
+          i, node,
+          buttons = Polymer.dom(this.root).querySelectorAll('button'),
+          button;
+
+        if (newValue) {
+          for (i = 0; i < afNodeList.length; i++) {
+            node = afNodeList[i];
+            node.disabled = true;
+          }
+
+          for (i = 0; i < buttons.length; i++) {
+            button = buttons[i];
+            button.setAttribute('disabled', true);
+          }
+
+        } else {
+          for (i = 0; i < afNodeList.length; i++) {
+            node = afNodeList[i];
+            node.disabled = false;
+          }
+
+          for (i = 0; i < buttons.length; i++) {
+            button = buttons[i];
+            button.removeAttribute('disabled');
+          }
+        }
+      },
+      valueChanged: function() {
+        
+      },
       schemaChanged: function(newValue, oldValue) {
         if (newValue && newValue.items && newValue.items.properties) {
           this.$.schemaNotAssigned.classList.add('hidden-div');
@@ -85,6 +120,7 @@
           position: this.value.length
         });
         this._updateItemsContainerHtml();
+        this._fireValueChangedEvent();
       },
       _removeItem: function(position) {
         this.value.splice(position, 1);
@@ -94,6 +130,7 @@
           item.position -= 1;
         }
         this._updateItemsContainerHtml();
+        this._fireValueChangedEvent();
       },
       _moveItemUp: function(position) {
         var prev = position - 1;
@@ -106,6 +143,7 @@
         this.value[prev] = tmp;
 
         this._updateItemsContainerHtml();
+        this._fireValueChangedEvent();
       },
       _moveItemDown: function(position) {
         var next = position + 1;
@@ -118,6 +156,7 @@
         this.value[next] = tmp;
 
         this._updateItemsContainerHtml();
+        this._fireValueChangedEvent();
       },
       _getPosition: function(button) {
         var positionAttr = button.getAttribute('data-position');
@@ -150,7 +189,7 @@
           } else {
             // create new html "item-container" if needed
             newItemHtml = this._createNewItemContainerHtml(item);
-            this.$.itemsContainer.appendChild(newItemHtml);
+            Polymer.dom(this.$.itemsContainer).appendChild(newItemHtml);
           }
         }
 
@@ -168,12 +207,12 @@
         itemDiv.classList.add('item-container');
 
         var itemHtml = this._createItemHtmlFromSchema(this.schema.items.properties, item);
-        itemDiv.appendChild(itemHtml);
+        Polymer.dom(itemDiv).appendChild(itemHtml);
 
         var itemActionsDiv = document.createElement('div');
         itemActionsDiv.setAttribute('style-scope', 'at-form-array');
         itemActionsDiv.classList.add('item-actions-container');
-        itemDiv.appendChild(itemActionsDiv);
+        Polymer.dom(itemDiv).appendChild(itemActionsDiv);
 
         var removeBtn = document.createElement('button');
         removeBtn.setAttribute('style-scope', 'at-form-array');
@@ -185,7 +224,7 @@
           var position = self._getPosition(event.target);
           self._removeItem(position);
         });
-        itemActionsDiv.appendChild(removeBtn);
+        Polymer.dom(itemActionsDiv).appendChild(removeBtn);
 
         var moveUpBtn = document.createElement('button');
         moveUpBtn.setAttribute('style-scope', 'at-form-array');
@@ -200,7 +239,7 @@
           var position = self._getPosition(event.target);
           self._moveItemUp(position);
         });
-        itemActionsDiv.appendChild(moveUpBtn);
+        Polymer.dom(itemActionsDiv).appendChild(moveUpBtn);
 
         var moveDownBtn = document.createElement('button');
         moveDownBtn.setAttribute('style-scope', 'at-form-array');
@@ -215,7 +254,7 @@
           var position = self._getPosition(event.target);
           self._moveItemDown(position);
         });
-        itemActionsDiv.appendChild(moveDownBtn);
+        Polymer.dom(itemActionsDiv).appendChild(moveDownBtn);
 
         return itemDiv;
       },
@@ -240,10 +279,12 @@
               case "string":
                 htmlElem = document.createElement('at-form-input');
                 htmlElem.value = item.entry[propName];
+                htmlElem.setAttribute('data-tagname', 'at-form-input');
                 break;
               case "enum":
                 htmlElem = document.createElement('at-form-lookup');
                 htmlElem.available = propDef.enum.join(",");
+                htmlElem.setAttribute('data-tagname', 'at-form-lookup');
                 if (propDef.default) {
                   htmlElem.value = propDef.default;
                 } else {
@@ -252,6 +293,7 @@
                 break;
               case "boolean":
                 htmlElem = document.createElement('at-form-checkbox');
+                htmlElem.setAttribute('data-tagname', 'at-form-checkbox');
                 htmlElem.value = item.entry[propName];
                 break;
             }
@@ -341,9 +383,16 @@
       },
       _updateItemValueEntry: function(position, property, value) {
         this.value[position].entry[property] = value;
+        this._fireValueChangedEvent();
       },
       _removeItemValueEntry: function(position) {
         this.value.splice(position, 1);
+        this._fireValueChangedEvent();
+      },
+      _fireValueChangedEvent: function() {
+        this.fire('value-changed', {
+          value: this.value
+        });
       }
     });
   </script>
