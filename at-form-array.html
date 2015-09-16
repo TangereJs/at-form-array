@@ -382,8 +382,10 @@
         return result;
       },
       _updateItemValueEntry: function(position, property, value) {
-        this.value[position].entry[property] = value;
-        this._fireValueChangedEvent();
+        if (this.value[position].entry[property] !== value) {
+          this.value[position].entry[property] = value;
+          this._fireValueChangedEvent();
+        }
       },
       _removeItemValueEntry: function(position) {
         this.value.splice(position, 1);
