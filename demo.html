@@ -71,13 +71,36 @@
         }
       }
 
+      atFormArray.value = [{
+        "entry": {
+          "type": "dog",
+          "name": "",
+          "fixed": false
+        },
+        "position": 0
+      }, {
+        "entry": {
+          "type": "dog",
+          "name": "",
+          "fixed": false
+        },
+        "position": 1
+      }, {
+        "entry": {
+          "type": "dog",
+          "name": "",
+          "fixed": false
+        },
+        "position": 2
+      }];
+
       valueEcho.innerHTML = JSON.stringify(atFormArray.value, undefined, ' ');
       atFormArray.addEventListener('value-changed', function(event) {
         valueEcho.innerHTML = JSON.stringify(atFormArray.value, undefined, ' ');
       });
 
       disableArray.value = atFormArray.disabled;
-      disableArray.addEventListener('value-changed', function(){
+      disableArray.addEventListener('value-changed', function() {
         atFormArray.disabled = disableArray.value;
       });
     });

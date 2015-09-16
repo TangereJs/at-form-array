@@ -104,8 +104,8 @@
           }
         }
       },
-      valueChanged: function() {
-        
+      valueChanged: function(newValue, oldValue) {
+        this._updateItemsContainerHtml();
       },
       schemaChanged: function(newValue, oldValue) {
         if (newValue && newValue.items && newValue.items.properties) {
