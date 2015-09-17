@@ -285,10 +285,10 @@
                 htmlElem = document.createElement('at-form-lookup');
                 htmlElem.available = propDef.enum.join(",");
                 htmlElem.setAttribute('data-tagname', 'at-form-lookup');
-                if (propDef.default) {
-                  htmlElem.value = propDef.default;
-                } else {
+                if (item.entry[propName]) {
                   htmlElem.value = item.entry[propName];
+                } else if (propDef.default) {
+                  htmlElem.value = propDef.default;
                 }
                 break;
               case "boolean":
