@@ -72,26 +72,17 @@
       }
 
       atFormArray.value = [{
-        "entry": {
-          "type": "dog",
-          "name": "Hector",
-          "fixed": false
-        },
-        "position": 0
+        "type": "dog",
+        "name": "Hector",
+        "fixed": false
       }, {
-        "entry": {
-          "type": "cat",
-          "name": "Sylvester",
-          "fixed": true
-        },
-        "position": 1
+        "type": "cat",
+        "name": "Sylvester",
+        "fixed": true
       }, {
-        "entry": {
-          "type": "bird",
-          "name": "Tweety",
-          "fixed": false
-        },
-        "position": 2
+        "type": "bird",
+        "name": "Tweety",
+        "fixed": false
       }];
 
       valueEcho.innerHTML = JSON.stringify(atFormArray.value, undefined, ' ');

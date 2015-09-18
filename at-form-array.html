@@ -115,10 +115,7 @@
       },
       _addNewItem: function() {
         var newEntry = this._createNewItemValueEntry(this.schema.items.properties);
-        this.value.push({
-          entry: newEntry,
-          position: this.value.length
-        });
+        this.value.push(newEntry);
         this._updateItemsContainerHtml();
         this._fireValueChangedEvent();
       },
@@ -127,7 +124,6 @@
 
         for (var i = position; i < this.value.length; i += 1) {
           var item = this.value[i];
-          item.position -= 1;
         }
         this._updateItemsContainerHtml();
         this._fireValueChangedEvent();
@@ -136,8 +132,6 @@
         var prev = position - 1;
         var tmp;
 
-        this.value[position].position -= 1;
-        this.value[prev].position += 1;
         tmp = this.value[position];
         this.value[position] = this.value[prev];
         this.value[prev] = tmp;
@@ -149,8 +143,6 @@
         var next = position + 1;
         var tmp;
 
-        this.value[position].position += 1;
-        this.value[next].position -= 1;
         tmp = this.value[position];
         this.value[position] = this.value[next];
         this.value[next] = tmp;
@@ -185,10 +177,10 @@
 
           if (existingItemHtml) {
             // update existing html if available
-            this._updateItemContainerHtml(existingItemHtml, item);
+            this._updateItemContainerHtml(existingItemHtml, item, valueArrIndex);
           } else {
             // create new html "item-container" if needed
-            newItemHtml = this._createNewItemContainerHtml(item);
+            newItemHtml = this._createNewItemContainerHtml(item, valueArrIndex);
             Polymer.dom(this.$.itemsContainer).appendChild(newItemHtml);
           }
         }
@@ -200,13 +192,13 @@
           valueArrIndex += 1;
         }
       },
-      _createNewItemContainerHtml: function(item) {
+      _createNewItemContainerHtml: function(item, position) {
         var self = this;
         var itemDiv = document.createElement('div');
         itemDiv.setAttribute('style-scope', 'at-form-array');
         itemDiv.classList.add('item-container');
 
-        var itemHtml = this._createItemHtmlFromSchema(this.schema.items.properties, item);
+        var itemHtml = this._createItemHtmlFromSchema(this.schema.items.properties, item, position);
         Polymer.dom(itemDiv).appendChild(itemHtml);
 
         var itemActionsDiv = document.createElement('div');
@@ -218,7 +210,7 @@
         removeBtn.setAttribute('style-scope', 'at-form-array');
         removeBtn.classList.add('action-button');
         removeBtn.setAttribute('data-action-type', 'remove');
-        removeBtn.setAttribute('data-position', item.position);
+        removeBtn.setAttribute('data-position', position);
         removeBtn.innerHTML = 'Remove';
         removeBtn.addEventListener('click', function(event) {
           var position = self._getPosition(event.target);
@@ -229,11 +221,11 @@
         var moveUpBtn = document.createElement('button');
         moveUpBtn.setAttribute('style-scope', 'at-form-array');
         moveUpBtn.classList.add('action-button');
-        if (item.position === 0) {
+        if (position === 0) {
           moveUpBtn.classList.add('item-action-hidden');
         }
         moveUpBtn.setAttribute('data-action-type', 'moveup');
-        moveUpBtn.setAttribute('data-position', item.position);
+        moveUpBtn.setAttribute('data-position', position);
         moveUpBtn.innerHTML = 'Move Up';
         moveUpBtn.addEventListener('click', function(event) {
           var position = self._getPosition(event.target);
@@ -244,11 +236,11 @@
         var moveDownBtn = document.createElement('button');
         moveDownBtn.setAttribute('style-scope', 'at-form-array');
         moveDownBtn.classList.add('action-button');
-        if (item.position === this.value.length - 1) {
+        if (position === this.value.length - 1) {
           moveDownBtn.classList.add('item-action-hidden');
         }
         moveDownBtn.setAttribute('data-action-type', 'movedown');
-        moveDownBtn.setAttribute('data-position', item.position);
+        moveDownBtn.setAttribute('data-position', position);
         moveDownBtn.innerHTML = 'Move Down';
         moveDownBtn.addEventListener('click', function(event) {
           var position = self._getPosition(event.target);
@@ -258,7 +250,7 @@
 
         return itemDiv;
       },
-      _createItemHtmlFromSchema: function(properties, item) {
+      _createItemHtmlFromSchema: function(properties, item, position) {
         var self = this;
         var resultHtml = undefined;
         if (Object.keys(properties).length > 0) {
@@ -278,15 +270,15 @@
             switch (propType) {
               case "string":
                 htmlElem = document.createElement('at-form-input');
-                htmlElem.value = item.entry[propName];
+                htmlElem.value = item[propName];
                 htmlElem.setAttribute('data-tagname', 'at-form-input');
                 break;
               case "enum":
                 htmlElem = document.createElement('at-form-lookup');
                 htmlElem.available = propDef.enum.join(",");
                 htmlElem.setAttribute('data-tagname', 'at-form-lookup');
-                if (item.entry[propName]) {
-                  htmlElem.value = item.entry[propName];
+                if (item[propName]) {
+                  htmlElem.value = item[propName];
                 } else if (propDef.default) {
                   htmlElem.value = propDef.default;
                 }
@@ -294,12 +286,12 @@
               case "boolean":
                 htmlElem = document.createElement('at-form-checkbox');
                 htmlElem.setAttribute('data-tagname', 'at-form-checkbox');
-                htmlElem.value = item.entry[propName];
+                htmlElem.value = item[propName];
                 break;
             }
 
             htmlElem.setAttribute('style-scope', 'at-form-array');
-            htmlElem.setAttribute('data-position', item.position);
+            htmlElem.setAttribute('data-position', position);
             htmlElem.setAttribute('data-name', propName);
             htmlElem.classList.add('item-property');
             if (propDef.title) {
@@ -318,41 +310,41 @@
         }
         return resultHtml;
       },
-      _updateItemContainerHtml: function(existingItemHtml, item) {
+      _updateItemContainerHtml: function(existingItemHtml, item, position) {
         var afInput, actionButotns, actionButtonsIndex, actionButton, moveUpBtn, moveDownBtn;
 
         var itemHtml = existingItemHtml.querySelector('.item');
-        this._updateItemHtml(itemHtml, item);
+        this._updateItemHtml(itemHtml, item, position);
 
         actionButotns = existingItemHtml.querySelectorAll('.action-button');
         for (actionButtonsIndex = 0; actionButtonsIndex < actionButotns.length; actionButtonsIndex += 1) {
           actionButton = actionButotns[actionButtonsIndex];
-          actionButton.setAttribute('data-position', item.position);
+          actionButton.setAttribute('data-position', position);
         }
 
         moveUpBtn = existingItemHtml.querySelector('[data-action-type="moveup"]');
         moveDownBtn = existingItemHtml.querySelector('[data-action-type="movedown"]');
-        if (item.position === 0) {
+        if (position === 0) {
           moveUpBtn.classList.add('item-action-hidden');
           if (this.value.length > 1) {
             moveDownBtn.classList.remove('item-action-hidden');
           }
         }
-        if (item.position > 0 && item.position < this.value.length - 1) {
+        if (position > 0 && position < this.value.length - 1) {
           moveUpBtn.classList.remove('item-action-hidden');
           moveDownBtn.classList.remove('item-action-hidden');
         }
-        if (item.position === this.value.length - 1) {
+        if (position === this.value.length - 1) {
           moveDownBtn.classList.add('item-action-hidden');
         }
       },
-      _updateItemHtml: function(existingItemHtml, item) {
+      _updateItemHtml: function(existingItemHtml, item, position) {
         var properties = existingItemHtml.querySelectorAll('.item-property');
         var index, prop;
         for (index = 0; index < properties.length; index += 1) {
           prop = properties[index];
-          prop.value = item.entry[prop.getAttribute('data-name')];
-          prop.setAttribute('data-position', item.position);
+          prop.value = item[prop.getAttribute('data-name')];
+          prop.setAttribute('data-position', position);
         }
       },
       _createNewItemValueEntry: function(properties) {
@@ -382,8 +374,8 @@
         return result;
       },
       _updateItemValueEntry: function(position, property, value) {
-        if (this.value[position].entry[property] !== value) {
-          this.value[position].entry[property] = value;
+        if (this.value[position][property] !== value) {
+          this.value[position][property] = value;
           this._fireValueChangedEvent();
         }
       },
