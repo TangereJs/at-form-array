@@ -67,6 +67,7 @@
       ready: function() {
         var self = this;
         this.$.addItemBtn.addEventListener('click', function(event) {
+          event.stopPropagation();
           self._addNewItem();
         });
       },
@@ -213,6 +214,7 @@
         removeBtn.setAttribute('data-position', position);
         removeBtn.innerHTML = 'Remove';
         removeBtn.addEventListener('click', function(event) {
+          event.stopPropagation();
           var position = self._getPosition(event.target);
           self._removeItem(position);
         });
@@ -228,6 +230,7 @@
         moveUpBtn.setAttribute('data-position', position);
         moveUpBtn.innerHTML = 'Move Up';
         moveUpBtn.addEventListener('click', function(event) {
+          event.stopPropagation();
           var position = self._getPosition(event.target);
           self._moveItemUp(position);
         });
@@ -243,6 +246,7 @@
         moveDownBtn.setAttribute('data-position', position);
         moveDownBtn.innerHTML = 'Move Down';
         moveDownBtn.addEventListener('click', function(event) {
+          event.stopPropagation();
           var position = self._getPosition(event.target);
           self._moveItemDown(position);
         });
@@ -301,6 +305,7 @@
             }
             Polymer.dom(resultHtml).appendChild(htmlElem);
             htmlElem.addEventListener('value-changed', function(event) {
+              event.stopPropagation();
               var position = self._getPosition(event.target);
               var property = event.target.getAttribute('data-name');
               var value = event.detail.value;
