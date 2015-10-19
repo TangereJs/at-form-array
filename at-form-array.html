@@ -12,10 +12,15 @@
     .hidden-div {
       display: none;
     }
+
+    .hide-label {
+      display: none;
+    }
   </style>
   <template>
+    <at-core-theme></at-core-theme>
     <div class="field">
-      <div>
+      <div id="labelContainer">
         <label>{{label}}</label>
       </div>
       <div id="schemaAssigned" class="hidden-div">
@@ -38,6 +43,11 @@
         label: {
           type: String,
           value: ''
+        },
+        hideTitle: {
+          type: Boolean,
+          value: false,
+          observer: 'hideTitleChanged'
         },
         disabled: {
           type: Boolean,
@@ -104,6 +114,9 @@
             button.removeAttribute('disabled');
           }
         }
+      },
+      hideTitleChanged: function (newValue, oldValue) {
+        this.toggleClass("hide-label", newValue, this.$.labelContainer);
       },
       valueChanged: function(newValue, oldValue) {
         this._updateItemsContainerHtml();

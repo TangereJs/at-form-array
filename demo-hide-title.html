@@ -1,0 +1,101 @@
+<!doctype html>
+<html>
+
+<head>
+  <title>at-form-array</title>
+
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1, user-scalable=yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+
+  <script src="../webcomponentsjs/webcomponents-lite.js"></script>
+  <link rel="import" href="../polymer/polymer.html" />
+
+  <link rel="import" href="../layout/layout.html" />
+  <link rel="import" href="at-form-array.html" />
+  <link rel="import" href="../at-form-checkbox/at-form-checkbox.html" />
+  <style media="screen">
+    .valueEcho {
+      min-height: 500px;
+      margin: 0 6px;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="horizontal layout">
+    <div class="vertical layout flex-6">
+      <h3>at-form-array demo</h3>
+      <at-form-checkbox id="disableArray" label="Disable at-form-array"></at-form-checkbox>
+      <at-form-array label="Random people" id="atFormArray" hide-title="true"></at-form-array>
+    </div>
+    <div class="vertical layout flex-6">
+      <h3>at-form-array value echo</h3>
+      <textarea id="valueEcho" class="valueEcho"></textarea>
+    </div>
+  </div>
+
+  <br>
+  <script>
+    document.addEventListener('WebComponentsReady', function() {
+      var
+        atFormArray = document.getElementById('atFormArray'),
+        valueEcho = document.getElementById('valueEcho'),
+        disableArray = document.getElementById('disableArray');
+
+      atFormArray.schema = {
+        "items": {
+          "type": "object",
+          "properties": {
+            "type": {
+              "type": "string",
+              "enum": [
+                "cat",
+                "dog",
+                "bird",
+                "reptile",
+                "other"
+              ],
+              "default": "dog"
+            },
+            "name": {
+              "type": "string"
+            },
+            "fixed": {
+              "type": "boolean",
+              "title": "spayed / neutered"
+            }
+          }
+        }
+      }
+
+      atFormArray.value = [{
+        "type": "dog",
+        "name": "Hector",
+        "fixed": false
+      }, {
+        "type": "cat",
+        "name": "Sylvester",
+        "fixed": true
+      }, {
+        "type": "bird",
+        "name": "Tweety",
+        "fixed": false
+      }];
+
+      valueEcho.innerHTML = JSON.stringify(atFormArray.value, undefined, ' ');
+      atFormArray.addEventListener('value-changed', function(event) {
+        valueEcho.innerHTML = JSON.stringify(atFormArray.value, undefined, ' ');
+      });
+
+      disableArray.value = atFormArray.disabled;
+      disableArray.addEventListener('value-changed', function() {
+        atFormArray.disabled = disableArray.value;
+      });
+    });
+  </script>
+</body>
+
+</html>
