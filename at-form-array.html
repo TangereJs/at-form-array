@@ -71,6 +71,11 @@
             return {};
           },
           observer: 'schemaChanged'
+        },
+        layout: {
+          type: String,
+          value: 'vertical',
+          observer: 'layoutChanged'
         }
       },
       _scopeCssViaAttr: true,
@@ -117,6 +122,9 @@
       },
       hideTitleChanged: function (newValue, oldValue) {
         this.toggleClass("hide-label", newValue, this.$.labelContainer);
+      },
+      layoutChanged: function (newValue, oldValue) {
+
       },
       valueChanged: function(newValue, oldValue) {
         this._updateItemsContainerHtml();
