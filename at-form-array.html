@@ -1,7 +1,9 @@
-<link rel="import" href="../at-core-theme/at-core-theme.html" />
-<link rel="import" href="../at-form-input/at-form-input.html" />
-<link rel="import" href="../at-form-lookup/at-form-lookup.html" />
-<link rel="import" href="../at-form-checkbox/at-form-checkbox.html" />
+<link rel="import" href="../layout/layout.html">
+<link rel="import" href="../at-core-theme/at-core-theme.html">
+<link rel="import" href="../at-carbon-icon/at-carbon-icon.html">
+<link rel="import" href="../at-form-input/at-form-input.html">
+<link rel="import" href="../at-form-lookup/at-form-lookup.html">
+<link rel="import" href="../at-form-checkbox/at-form-checkbox.html">
 
 <dom-module id="at-form-array">
   <style>
@@ -16,18 +18,41 @@
     .hide-label {
       display: none;
     }
+
+    .field-wrapper {
+      margin: 2px;
+      padding: 2px;
+    }
+
+    .action-button {
+      margin: 2px;
+      padding: 2px;
+    }
+
+    .headerText {
+      font-weight: bold;
+      margin: 0 2px;
+      padding: 0 2px;
+    }
+
+    .label-content {
+    }
   </style>
   <template>
     <at-core-theme></at-core-theme>
-    <div class="field">
+    <div class="field vertical layout">
       <div id="labelContainer">
-        <label>{{label}}</label>
+        <h4 class="label-content">{{label}}</h4>
       </div>
       <div id="schemaAssigned" class="hidden-div">
+        <div class="horizontal layout">
+          <div id="headerContainer" class="horizontal layout center flex-8">
+          </div>
+          <div id="headerPadding" class="flex-4"></div>
+        </div>
+        <div id="itemsContainer" class="items-container vertical layout"></div>
         <div>
           <button id="addItemBtn">Add item</button>
-        </div>
-        <div id="itemsContainer" class="items-container">
         </div>
       </div>
       <div id="schemaNotAssigned">
@@ -120,10 +145,10 @@
           }
         }
       },
-      hideTitleChanged: function (newValue, oldValue) {
+      hideTitleChanged: function(newValue, oldValue) {
         this.toggleClass("hide-label", newValue, this.$.labelContainer);
       },
-      layoutChanged: function (newValue, oldValue) {
+      layoutChanged: function(newValue, oldValue) {
 
       },
       valueChanged: function(newValue, oldValue) {
@@ -131,8 +156,10 @@
       },
       schemaChanged: function(newValue, oldValue) {
         if (newValue && newValue.items && newValue.items.properties) {
-          this.$.schemaNotAssigned.classList.add('hidden-div');
-          this.$.schemaAssigned.classList.remove('hidden-div');
+          Polymer.dom(this.$.schemaNotAssigned).classList.add('hidden-div');
+          Polymer.dom(this.$.schemaAssigned).classList.remove('hidden-div');
+
+          this._updateHeader();
         }
       },
       _addNewItem: function() {
@@ -181,6 +208,43 @@
         console.error('Button doesn\'t have position attribute');
         return -1;
       },
+      _updateHeader: function() {
+        var keyCount,
+          properties,
+          flexValue,
+          flexClass,
+          propDef,
+          headerText,
+          headerItem,
+          spanText,
+          self = this;
+
+        // clear current header
+        Polymer.dom(this.$.headerContainer).innerHTML = '';
+
+        if (this.schema && this.schema.items && this.schema.items.properties) {
+          properties = this.schema.items.properties;
+          keyCount = Object.keys(properties).length;
+          flexValue = 12 / keyCount;
+          flexClass = 'flex-' + flexValue;
+
+          Object.keys(properties).forEach(function(propertyName, index) {
+            propDef = properties[propertyName];
+            headerText = propDef.title ? propDef.title : propertyName;
+            headerItem = document.createElement('div');
+            Polymer.dom(headerItem).classList.add(flexClass);
+            Polymer.dom(self.$.headerContainer).appendChild(headerItem);
+
+            spanText = document.createElement('span');
+            Polymer.dom(spanText).classList.add('headerText');
+            Polymer.dom(spanText).innerHTML = headerText;
+            Polymer.dom(headerItem).appendChild(spanText);
+          });
+        } else {
+          console.log("Invalid schema structure. Missing schema.items and / or schema.items.properties property");
+          console.log("Schema: ", JSON.stringify(this.schema, undefined, ' '));
+        }
+      },
       _updateItemsContainerHtml: function() {
         var
           existingItemHtmlArr,
@@ -190,7 +254,7 @@
           newItemHtml;
 
         // query items container for existing html
-        existingItemHtmlArr = this.$.itemsContainer.querySelectorAll('.item-container');
+        existingItemHtmlArr = Polymer.dom(this.$.itemsContainer).querySelectorAll('.item-container');
 
         // for each entry in this.value array
         for (valueArrIndex = 0; valueArrIndex < this.value.length; valueArrIndex += 1) {
@@ -217,74 +281,107 @@
       _createNewItemContainerHtml: function(item, position) {
         var self = this;
         var itemDiv = document.createElement('div');
-        itemDiv.setAttribute('style-scope', 'at-form-array');
-        itemDiv.classList.add('item-container');
+        Polymer.dom(itemDiv).classList.add('item-container');
+        Polymer.dom(itemDiv).classList.add('horizontal');
+        Polymer.dom(itemDiv).classList.add('layout');
+        Polymer.dom(itemDiv).classList.add('center');
 
         var itemHtml = this._createItemHtmlFromSchema(this.schema.items.properties, item, position);
         Polymer.dom(itemDiv).appendChild(itemHtml);
 
         var itemActionsDiv = document.createElement('div');
-        itemActionsDiv.setAttribute('style-scope', 'at-form-array');
-        itemActionsDiv.classList.add('item-actions-container');
+        Polymer.dom(itemActionsDiv).classList.add('item-actions-container');
+        Polymer.dom(itemActionsDiv).classList.add('flex-2');
         Polymer.dom(itemDiv).appendChild(itemActionsDiv);
 
-        var removeBtn = document.createElement('button');
-        removeBtn.setAttribute('style-scope', 'at-form-array');
-        removeBtn.classList.add('action-button');
-        removeBtn.setAttribute('data-action-type', 'remove');
-        removeBtn.setAttribute('data-position', position);
-        removeBtn.innerHTML = 'Remove';
-        removeBtn.addEventListener('click', function(event) {
-          event.stopPropagation();
-          var position = self._getPosition(event.target);
-          self._removeItem(position);
-        });
-        Polymer.dom(itemActionsDiv).appendChild(removeBtn);
-
+        // ------------------------------
+        // create move up button
+        // ------------------------------
         var moveUpBtn = document.createElement('button');
-        moveUpBtn.setAttribute('style-scope', 'at-form-array');
-        moveUpBtn.classList.add('action-button');
+        Polymer.dom(moveUpBtn).setAttribute('type', 'button');
+        Polymer.dom(moveUpBtn).classList.add('action-button');
         if (position === 0) {
-          moveUpBtn.classList.add('item-action-hidden');
+          Polymer.dom(moveUpBtn).classList.add('item-action-hidden');
         }
-        moveUpBtn.setAttribute('data-action-type', 'moveup');
-        moveUpBtn.setAttribute('data-position', position);
-        moveUpBtn.innerHTML = 'Move Up';
+        Polymer.dom(moveUpBtn).setAttribute('data-action-type', 'moveup');
+        Polymer.dom(moveUpBtn).setAttribute('data-position', position);
+        Polymer.dom(moveUpBtn).setAttribute('title', 'Move Up');
         moveUpBtn.addEventListener('click', function(event) {
           event.stopPropagation();
-          var position = self._getPosition(event.target);
+          var position = self._getPosition(event.currentTarget);
           self._moveItemUp(position);
         });
         Polymer.dom(itemActionsDiv).appendChild(moveUpBtn);
+        var moveUpIcon = document.createElement('at-carbon-icon');
+        moveUpIcon.icon = "now:arrow-up";
+        Polymer.dom(moveUpBtn).appendChild(moveUpIcon);
 
+        // ------------------------------
+        // create move down button
+        // ------------------------------
         var moveDownBtn = document.createElement('button');
-        moveDownBtn.setAttribute('style-scope', 'at-form-array');
-        moveDownBtn.classList.add('action-button');
+        Polymer.dom(moveDownBtn).setAttribute('type', 'button');
+        Polymer.dom(moveDownBtn).classList.add('action-button');
         if (position === this.value.length - 1) {
           moveDownBtn.classList.add('item-action-hidden');
         }
-        moveDownBtn.setAttribute('data-action-type', 'movedown');
-        moveDownBtn.setAttribute('data-position', position);
-        moveDownBtn.innerHTML = 'Move Down';
+        Polymer.dom(moveDownBtn).setAttribute('data-action-type', 'movedown');
+        Polymer.dom(moveDownBtn).setAttribute('data-position', position);
+        Polymer.dom(moveDownBtn).setAttribute('title', 'Move Down');
         moveDownBtn.addEventListener('click', function(event) {
           event.stopPropagation();
-          var position = self._getPosition(event.target);
+          var position = self._getPosition(event.currentTarget);
           self._moveItemDown(position);
         });
         Polymer.dom(itemActionsDiv).appendChild(moveDownBtn);
+        var moveDownIcon = document.createElement('at-carbon-icon');
+        moveDownIcon.icon ='now:arrow-down';
+        Polymer.dom(moveDownBtn).appendChild(moveDownIcon);
+
+        // ------------------------------
+        // create remove button
+        // ------------------------------
+        var removeBtn = document.createElement('button');
+        Polymer.dom(removeBtn).setAttribute('type', 'button');
+        Polymer.dom(removeBtn).classList.add('action-button');
+        Polymer.dom(removeBtn).setAttribute('data-action-type', 'remove');
+        Polymer.dom(removeBtn).setAttribute('data-position', position);
+        Polymer.dom(removeBtn).setAttribute('title', 'Remove');
+        removeBtn.addEventListener('click', function(event) {
+          event.stopPropagation();
+          var position = self._getPosition(event.currentTarget);
+          self._removeItem(position);
+        });
+        Polymer.dom(itemActionsDiv).appendChild(removeBtn);
+        var removeIcon = document.createElement('at-carbon-icon');
+        removeIcon.icon = "now:delete";
+        Polymer.dom(removeBtn).appendChild(removeIcon);
 
         return itemDiv;
       },
       _createItemHtmlFromSchema: function(properties, item, position) {
-        var self = this;
-        var resultHtml = undefined;
-        if (Object.keys(properties).length > 0) {
-          resultHtml = document.createElement('div');
-          resultHtml.classList.add('item');
+        var self = this,
+          resultHtml = undefined,
+          flexValue,
+          flexClass,
+          propsLength = Object.keys(properties).length;
 
+        if (propsLength > 0) {
+          resultHtml = document.createElement('div');
+          Polymer.dom(resultHtml).classList.add('item');
+          Polymer.dom(resultHtml).classList.add('horizontal');
+          Polymer.dom(resultHtml).classList.add('layout');
+          Polymer.dom(resultHtml).classList.add('center');
+          Polymer.dom(resultHtml).classList.add('flex-10');
+
+          flexValue = 12 / propsLength;
+          flexClass = 'flex-' + flexValue;
           for (var propName in properties) {
             var propDef = properties[propName];
             var propType = propDef.type;
+            var flexDiv = document.createElement('div');
+            Polymer.dom(flexDiv).classList.add('field-wrapper');
+            Polymer.dom(flexDiv).classList.add(flexClass);
 
             if (propType === "string" && propDef.enum) {
               propType = "enum";
@@ -296,12 +393,14 @@
               case "string":
                 htmlElem = document.createElement('at-form-input');
                 htmlElem.value = item[propName];
-                htmlElem.setAttribute('data-tagname', 'at-form-input');
+                Polymer.dom(htmlElem).setAttribute('data-tagname', 'at-form-input');
+                Polymer.dom(htmlElem).setAttribute('hide-title', 'true');
                 break;
               case "enum":
                 htmlElem = document.createElement('at-form-lookup');
                 htmlElem.available = propDef.enum.join(",");
-                htmlElem.setAttribute('data-tagname', 'at-form-lookup');
+                Polymer.dom(htmlElem).setAttribute('data-tagname', 'at-form-lookup');
+                Polymer.dom(htmlElem).setAttribute('hide-title', 'true');
                 if (item[propName]) {
                   htmlElem.value = item[propName];
                 } else if (propDef.default) {
@@ -310,21 +409,22 @@
                 break;
               case "boolean":
                 htmlElem = document.createElement('at-form-checkbox');
-                htmlElem.setAttribute('data-tagname', 'at-form-checkbox');
+                Polymer.dom(htmlElem).setAttribute('data-tagname', 'at-form-checkbox');
+                Polymer.dom(htmlElem).setAttribute('hide-title', 'true');
                 htmlElem.value = item[propName];
                 break;
             }
 
-            htmlElem.setAttribute('style-scope', 'at-form-array');
-            htmlElem.setAttribute('data-position', position);
-            htmlElem.setAttribute('data-name', propName);
-            htmlElem.classList.add('item-property');
+            Polymer.dom(htmlElem).setAttribute('data-position', position);
+            Polymer.dom(htmlElem).setAttribute('data-name', propName);
+            Polymer.dom(htmlElem).classList.add('item-property');
             if (propDef.title) {
               htmlElem.label = propDef.title;
             } else {
               htmlElem.label = propName;
             }
-            Polymer.dom(resultHtml).appendChild(htmlElem);
+            Polymer.dom(flexDiv).appendChild(htmlElem);
+            Polymer.dom(resultHtml).appendChild(flexDiv);
             htmlElem.addEventListener('value-changed', function(event) {
               event.stopPropagation();
               var position = self._getPosition(event.target);
@@ -339,38 +439,38 @@
       _updateItemContainerHtml: function(existingItemHtml, item, position) {
         var afInput, actionButotns, actionButtonsIndex, actionButton, moveUpBtn, moveDownBtn;
 
-        var itemHtml = existingItemHtml.querySelector('.item');
+        var itemHtml = Polymer.dom(existingItemHtml).querySelector('.item');
         this._updateItemHtml(itemHtml, item, position);
 
-        actionButotns = existingItemHtml.querySelectorAll('.action-button');
+        actionButotns = Polymer.dom(existingItemHtml).querySelectorAll('.action-button');
         for (actionButtonsIndex = 0; actionButtonsIndex < actionButotns.length; actionButtonsIndex += 1) {
           actionButton = actionButotns[actionButtonsIndex];
-          actionButton.setAttribute('data-position', position);
+          Polymer.dom(actionButton).setAttribute('data-position', position);
         }
 
-        moveUpBtn = existingItemHtml.querySelector('[data-action-type="moveup"]');
-        moveDownBtn = existingItemHtml.querySelector('[data-action-type="movedown"]');
+        moveUpBtn = Polymer.dom(existingItemHtml).querySelector('[data-action-type="moveup"]');
+        moveDownBtn = Polymer.dom(existingItemHtml).querySelector('[data-action-type="movedown"]');
         if (position === 0) {
-          moveUpBtn.classList.add('item-action-hidden');
+          Polymer.dom(moveUpBtn).classList.add('item-action-hidden');
           if (this.value.length > 1) {
-            moveDownBtn.classList.remove('item-action-hidden');
+            Polymer.dom(moveDownBtn).classList.remove('item-action-hidden');
           }
         }
         if (position > 0 && position < this.value.length - 1) {
-          moveUpBtn.classList.remove('item-action-hidden');
-          moveDownBtn.classList.remove('item-action-hidden');
+          Polymer.dom(moveUpBtn).classList.remove('item-action-hidden');
+          Polymer.dom(moveDownBtn).classList.remove('item-action-hidden');
         }
         if (position === this.value.length - 1) {
-          moveDownBtn.classList.add('item-action-hidden');
+          Polymer.dom(moveDownBtn).classList.add('item-action-hidden');
         }
       },
       _updateItemHtml: function(existingItemHtml, item, position) {
-        var properties = existingItemHtml.querySelectorAll('.item-property');
+        var properties = Polymer.dom(existingItemHtml).querySelectorAll('.item-property');
         var index, prop;
         for (index = 0; index < properties.length; index += 1) {
           prop = properties[index];
           prop.value = item[prop.getAttribute('data-name')];
-          prop.setAttribute('data-position', position);
+          Polymer.dom(prop).setAttribute('data-position', position);
         }
       },
       _createNewItemValueEntry: function(properties) {

@@ -2,8 +2,10 @@
   "name": "at-form-array",
   "private": true,
   "dependencies": {
-    "polymer": "Polymer/polymer#0.8-preview",
-    "at-core-theme": "TangereJs/at-core-theme#0.8-preview",
     "layout": "Polymer/layout#0.8-preview",
+    "at-core-theme": "TangereJs/at-core-theme#0.8-preview",
+    "at-form-input": "TangereJs/at-form-input#0.8-preview",
+    "at-form-lookup": "TangereJs/at-form-lookup#0.8-preview",
+    "at-form-checkbox": "TangereJs/at-form-checkbox#0.8-preview",
   }
 }
