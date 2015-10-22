@@ -1,9 +1,19 @@
 <link rel="import" href="../layout/layout.html">
 <link rel="import" href="../at-core-theme/at-core-theme.html">
 <link rel="import" href="../at-carbon-icon/at-carbon-icon.html">
+<link rel="import" href="../at-core-form/schema-helpers-import.html">
 <link rel="import" href="../at-form-input/at-form-input.html">
 <link rel="import" href="../at-form-lookup/at-form-lookup.html">
 <link rel="import" href="../at-form-checkbox/at-form-checkbox.html">
+<link rel="import" href="../at-form-markdown/at-form-markdown.html">
+<link rel="import" href="../at-form-codemirror/at-form-codemirror.html">
+<link rel="import" href="../at-form-password/at-form-password.html">
+<link rel="import" href="../at-form-file/at-form-file.html">
+<link rel="import" href="../at-form-image/at-form-image.html">
+<link rel="import" href="../at-form-date/at-form-date.html">
+<link rel="import" href="../at-form-daterange/at-form-daterange.html">
+<link rel="import" href="../at-form-radio/at-form-radio.html">
+<link rel="import" href="../at-carbon-icon/at-carbon-icon.html">
 
 <dom-module id="at-form-array">
   <style>
@@ -16,6 +26,10 @@
     }
 
     .hide-label {
+      display: none;
+    }
+
+    #headerWrapper.hide-header {
       display: none;
     }
 
@@ -35,8 +49,7 @@
       padding: 0 2px;
     }
 
-    .label-content {
-    }
+    .label-content {}
   </style>
   <template>
     <at-core-theme></at-core-theme>
@@ -45,10 +58,10 @@
         <h4 class="label-content">{{label}}</h4>
       </div>
       <div id="schemaAssigned" class="hidden-div">
-        <div class="horizontal layout">
-          <div id="headerContainer" class="horizontal layout center flex-8">
+        <div id="headerWrapper" class="horizontal layout">
+          <div id="headerContainer" class="horizontal layout center flex-10">
           </div>
-          <div id="headerPadding" class="flex-4"></div>
+          <div id="headerPadding" class="flex-2"></div>
         </div>
         <div id="itemsContainer" class="items-container vertical layout"></div>
         <div>
@@ -104,12 +117,14 @@
         }
       },
       _scopeCssViaAttr: true,
+      _supported_display_types: ["string", "number", "daterange", "boolean", "password", "radio", "toggle", "enum", "lookup", "file", "image", "code", "marked", "date", "time", "datetime"],
       ready: function() {
         var self = this;
         this.$.addItemBtn.addEventListener('click', function(event) {
           event.stopPropagation();
           self._addNewItem();
         });
+        this.toggleClass('hide-header', this.layout === 'vertical', this.$.headerWrapper);
       },
       disabledChanged: function(newValue, oldValue) {
         /* ij - to easily and quickly select all elements that need to be disabled
@@ -149,7 +164,47 @@
         this.toggleClass("hide-label", newValue, this.$.labelContainer);
       },
       layoutChanged: function(newValue, oldValue) {
+        var itemsContainer, itemContainers, items, fieldWrappers, self = this;;
 
+        this.toggleClass('hide-header', newValue === 'vertical', this.$.headerWrapper);
+
+        itemsContainer = Polymer.dom(this.$.itemsContainer);
+        itemContainers = itemsContainer.querySelectorAll('.item-container');
+        items = itemsContainer.querySelectorAll('.item');
+        fieldWrappers = itemsContainer.querySelectorAll('.field-wrapper');
+
+        if (newValue === 'horizontal') {
+          itemContainers.forEach(function(itemContainer) {
+            Polymer.dom(itemContainer).classList.add('center');
+            self.toggleClass('horizontal', true, itemContainer);
+            self.toggleClass('vertical', false, itemContainer);
+          });
+          items.forEach(function(item) {
+            Polymer.dom(item).classList.add('center');
+            self.toggleClass('horizontal', true, item);
+            self.toggleClass('vertical', false, item);
+          });
+          fieldWrappers.forEach(function(wrapper) {
+            Polymer.dom(wrapper).firstChild.hideTitle = true;
+          });
+        } else if (newValue === 'vertical') {
+          itemContainers.forEach(function(itemContainer) {
+            Polymer.dom(itemContainer).classList.remove('center');
+            self.toggleClass('horizontal', false, itemContainer);
+            self.toggleClass('vertical', true, itemContainer);
+          });
+          items.forEach(function(item) {
+            Polymer.dom(item).classList.remove('center');
+            self.toggleClass('horizontal', false, item);
+            self.toggleClass('vertical', true, item);
+          });
+          fieldWrappers.forEach(function(wrapper) {
+            Polymer.dom(wrapper).firstChild.hideTitle = false;
+          });
+        } else {
+          console.log('Layout value + ' + newValue + ' is unsupported. Supported values are horizontal and vertical.');
+          console.log('at-form-array layout not changed.');
+        }
       },
       valueChanged: function(newValue, oldValue) {
         this._updateItemsContainerHtml();
@@ -282,9 +337,11 @@
         var self = this;
         var itemDiv = document.createElement('div');
         Polymer.dom(itemDiv).classList.add('item-container');
-        Polymer.dom(itemDiv).classList.add('horizontal');
+        Polymer.dom(itemDiv).classList.add(self.layout);
         Polymer.dom(itemDiv).classList.add('layout');
-        Polymer.dom(itemDiv).classList.add('center');
+        if (self.layout === 'horizontal') {
+          Polymer.dom(itemDiv).classList.add('center');
+        }
 
         var itemHtml = this._createItemHtmlFromSchema(this.schema.items.properties, item, position);
         Polymer.dom(itemDiv).appendChild(itemHtml);
@@ -335,7 +392,7 @@
         });
         Polymer.dom(itemActionsDiv).appendChild(moveDownBtn);
         var moveDownIcon = document.createElement('at-carbon-icon');
-        moveDownIcon.icon ='now:arrow-down';
+        moveDownIcon.icon = 'now:arrow-down';
         Polymer.dom(moveDownBtn).appendChild(moveDownIcon);
 
         // ------------------------------
@@ -364,75 +421,60 @@
           resultHtml = undefined,
           flexValue,
           flexClass,
-          propsLength = Object.keys(properties).length;
+          propertyKeys = Object.keys(properties),
+          propsLength = propertyKeys.length;
 
         if (propsLength > 0) {
           resultHtml = document.createElement('div');
           Polymer.dom(resultHtml).classList.add('item');
-          Polymer.dom(resultHtml).classList.add('horizontal');
+          Polymer.dom(resultHtml).classList.add(self.layout);
           Polymer.dom(resultHtml).classList.add('layout');
-          Polymer.dom(resultHtml).classList.add('center');
+          if (self.layout === 'horizontal') {
+            Polymer.dom(resultHtml).classList.add('center');
+          }
           Polymer.dom(resultHtml).classList.add('flex-10');
 
           flexValue = 12 / propsLength;
           flexClass = 'flex-' + flexValue;
-          for (var propName in properties) {
+          propertyKeys.forEach(function(propName) {
             var propDef = properties[propName];
-            var propType = propDef.type;
-            var flexDiv = document.createElement('div');
-            Polymer.dom(flexDiv).classList.add('field-wrapper');
-            Polymer.dom(flexDiv).classList.add(flexClass);
+            var propType = schemaHelpers.getDisplayType(propDef);
 
-            if (propType === "string" && propDef.enum) {
-              propType = "enum";
-            }
+            if (self._supported_display_types.indexOf(propType) !== -1) {
+              var flexDiv = document.createElement('div');
+              Polymer.dom(flexDiv).classList.add('field-wrapper');
+              Polymer.dom(flexDiv).classList.add(flexClass);
 
-            var htmlElem = undefined;
+              var htmlElem = schemaHelpers.AtFormFactory.createElement(propName, propType, propDef);
+              Polymer.dom(htmlElem).classList.add('item-property');
+              htmlElem.hideTitle = self.layout === 'horizontal';
+              Polymer.dom(htmlElem).setAttribute('data-name', propName);
+              Polymer.dom(htmlElem).setAttribute('data-tagname', htmlElem.is);
+              Polymer.dom(htmlElem).setAttribute('data-position', position);
 
-            switch (propType) {
-              case "string":
-                htmlElem = document.createElement('at-form-input');
+              if (item[propName]) {
                 htmlElem.value = item[propName];
-                Polymer.dom(htmlElem).setAttribute('data-tagname', 'at-form-input');
-                Polymer.dom(htmlElem).setAttribute('hide-title', 'true');
-                break;
-              case "enum":
-                htmlElem = document.createElement('at-form-lookup');
-                htmlElem.available = propDef.enum.join(",");
-                Polymer.dom(htmlElem).setAttribute('data-tagname', 'at-form-lookup');
-                Polymer.dom(htmlElem).setAttribute('hide-title', 'true');
-                if (item[propName]) {
-                  htmlElem.value = item[propName];
-                } else if (propDef.default) {
-                  htmlElem.value = propDef.default;
-                }
-                break;
-              case "boolean":
-                htmlElem = document.createElement('at-form-checkbox');
-                Polymer.dom(htmlElem).setAttribute('data-tagname', 'at-form-checkbox');
-                Polymer.dom(htmlElem).setAttribute('hide-title', 'true');
-                htmlElem.value = item[propName];
-                break;
-            }
+              } else if (propDef.default) {
+                htmlElem.value = propDef.default;
+              } else {
+                item[propName] = htmlElem.value;
+              }
 
-            Polymer.dom(htmlElem).setAttribute('data-position', position);
-            Polymer.dom(htmlElem).setAttribute('data-name', propName);
-            Polymer.dom(htmlElem).classList.add('item-property');
-            if (propDef.title) {
-              htmlElem.label = propDef.title;
+              htmlElem.addEventListener('value-changed', function(event) {
+                event.stopPropagation();
+                var position = self._getPosition(event.target);
+                var property = event.target.getAttribute('data-name');
+                var value = event.detail.value;
+                self._updateItemValueEntry(position, property, value);
+              });
+
+              Polymer.dom(flexDiv).appendChild(htmlElem);
+              Polymer.dom(resultHtml).appendChild(flexDiv);
             } else {
-              htmlElem.label = propName;
+              console.log('Display type ' + displayType + ' not supported by at-form-array. Supported display types are ' + schemaHelpers.formatJson(self._supported_display_types));
+              console.log('Property definition: ' + schemaHelpers.formatJson(propDef));
             }
-            Polymer.dom(flexDiv).appendChild(htmlElem);
-            Polymer.dom(resultHtml).appendChild(flexDiv);
-            htmlElem.addEventListener('value-changed', function(event) {
-              event.stopPropagation();
-              var position = self._getPosition(event.target);
-              var property = event.target.getAttribute('data-name');
-              var value = event.detail.value;
-              self._updateItemValueEntry(position, property, value);
-            });
-          }
+          });
         }
         return resultHtml;
       },
