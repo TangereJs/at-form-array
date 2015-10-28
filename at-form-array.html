@@ -175,12 +175,10 @@
 
         if (newValue === 'horizontal') {
           itemContainers.forEach(function(itemContainer) {
-            Polymer.dom(itemContainer).classList.add('center');
             self.toggleClass('horizontal', true, itemContainer);
             self.toggleClass('vertical', false, itemContainer);
           });
           items.forEach(function(item) {
-            Polymer.dom(item).classList.add('center');
             self.toggleClass('horizontal', true, item);
             self.toggleClass('vertical', false, item);
           });
@@ -189,12 +187,10 @@
           });
         } else if (newValue === 'vertical') {
           itemContainers.forEach(function(itemContainer) {
-            Polymer.dom(itemContainer).classList.remove('center');
             self.toggleClass('horizontal', false, itemContainer);
             self.toggleClass('vertical', true, itemContainer);
           });
           items.forEach(function(item) {
-            Polymer.dom(item).classList.remove('center');
             self.toggleClass('horizontal', false, item);
             self.toggleClass('vertical', true, item);
           });
@@ -339,9 +335,6 @@
         Polymer.dom(itemDiv).classList.add('item-container');
         Polymer.dom(itemDiv).classList.add(self.layout);
         Polymer.dom(itemDiv).classList.add('layout');
-        if (self.layout === 'horizontal') {
-          Polymer.dom(itemDiv).classList.add('center');
-        }
 
         var itemHtml = this._createItemHtmlFromSchema(this.schema.items.properties, item, position);
         Polymer.dom(itemDiv).appendChild(itemHtml);
@@ -429,9 +422,6 @@
           Polymer.dom(resultHtml).classList.add('item');
           Polymer.dom(resultHtml).classList.add(self.layout);
           Polymer.dom(resultHtml).classList.add('layout');
-          if (self.layout === 'horizontal') {
-            Polymer.dom(resultHtml).classList.add('center');
-          }
           Polymer.dom(resultHtml).classList.add('flex-10');
 
           flexValue = 12 / propsLength;
