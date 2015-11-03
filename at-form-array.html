@@ -213,11 +213,16 @@
           this._updateHeader();
         }
       },
-      _addNewItem: function() {
-        var newEntry = this._createNewItemValueEntry(this.schema.items.properties);
-        this.value.push(newEntry);
-        this._updateItemsContainerHtml();
-        this._fireValueChangedEvent();
+      _addNewItem: function () {
+          var newEntry = this._createNewItemValueEntry(this.schema.items.properties);
+          this.value.push(newEntry);
+          this._updateItemsContainerHtml();
+          this._fireValueChangedEvent();
+
+          var nameFieldList = Polymer.dom(this.$.itemsContainer).querySelectorAll(".name");
+          if (nameFieldList.length > 0) {
+              nameFieldList[nameFieldList.length - 1].focus();
+          }
       },
       _removeItem: function(position) {
         this.value.splice(position, 1);
