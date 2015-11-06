@@ -14,6 +14,7 @@
 <link rel="import" href="../at-form-daterange/at-form-daterange.html">
 <link rel="import" href="../at-form-radio/at-form-radio.html">
 <link rel="import" href="../at-carbon-icon/at-carbon-icon.html">
+<link rel="import" href="../at-form-textarea/at-form-textarea.html">
 
 <dom-module id="at-form-array">
   <style>
@@ -117,7 +118,7 @@
         }
       },
       _scopeCssViaAttr: true,
-      _supported_display_types: ["string", "number", "daterange", "boolean", "password", "radio", "toggle", "enum", "lookup", "file", "image", "code", "marked", "date", "time", "datetime"],
+      _supported_display_types: ["string", "number", "daterange", "boolean", "password", "radio", "toggle", "enum", "lookup", "file", "image", "code", "marked", "date", "time", "datetime", "textarea"],
       ready: function() {
         var self = this;
         this.$.addItemBtn.addEventListener('click', function(event) {
