@@ -92,12 +92,18 @@
 
       valueEcho.innerHTML = JSON.stringify(atFormArray.value, undefined, ' ');
       atFormArray.addEventListener('value-changed', function(event) {
-        valueEcho.innerHTML = JSON.stringify(atFormArray.value, undefined, ' ');
+        valueEcho.value = JSON.stringify(atFormArray.value, undefined, ' ');
       });
 
       disableArray.value = atFormArray.disabled;
       disableArray.addEventListener('value-changed', function() {
         atFormArray.disabled = disableArray.value;
+      });
+
+      valueEcho.addEventListener('change', function(event){
+        var newValueJson = valueEcho.value;
+        var newValue = JSON.parse(newValueJson);
+        atFormArray.value = newValue;
       });
     });
   </script>
