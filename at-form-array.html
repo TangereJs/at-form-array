@@ -442,7 +442,7 @@
               }
 
               htmlElem.addEventListener('value-changed', function(event) {
-                event.stopPropagation();
+                // event.stopPropagation();
                 var position = self._getPosition(event.target);
                 var property = event.target.getAttribute('data-name');
                 var value = event.detail.value;
