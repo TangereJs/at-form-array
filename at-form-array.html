@@ -189,7 +189,12 @@
         }
       },
       valueChanged: function(newValue, oldValue) {
-        this._updateItemsContainerHtml();
+        if (this.schema && this.schema.items && this.schema.items.properties) {
+          this._updateItemsContainerHtml();
+        } else {          
+          console.log('Can not update value when schema is not assigned');
+          return;
+        }
       },
       schemaChanged: function(newValue, oldValue) {
         if (newValue && newValue.items && newValue.items.properties) {
