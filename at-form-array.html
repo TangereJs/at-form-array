@@ -103,7 +103,7 @@
         }
       },
       _scopeCssViaAttr: true,
-      _supported_display_types: ["string", "number", "daterange", "boolean", "password", "radio", "toggle", "enum", "lookup", "file", "image", "code", "marked", "date", "time", "datetime", "textarea"],
+      _unsupported_types: ["object"],
       ready: function() {
         var self = this;
         this.$.addItemBtn.addEventListener('click', function(event) {
@@ -191,7 +191,7 @@
       valueChanged: function(newValue, oldValue) {
         if (this.schema && this.schema.items && this.schema.items.properties) {
           this._updateItemsContainerHtml();
-        } else {          
+        } else {
           console.log('Can not update value when schema is not assigned');
           return;
         }
@@ -424,14 +424,13 @@
           flexClass = 'flex-' + flexValue;
           propertyKeys.forEach(function(propName) {
             var propDef = properties[propName];
-            var propType = schemaHelpers.getDisplayType(propDef);
+            var propType = schemaHelpers.getDisplayType(propDef, self._unsupported_types);
 
-            if (self._supported_display_types.indexOf(propType) !== -1) {
               var flexDiv = document.createElement('div');
               Polymer.dom(flexDiv).classList.add('field-wrapper');
               Polymer.dom(flexDiv).classList.add(flexClass);
 
-              var htmlElem = schemaHelpers.AtFormFactory.createElement(propName, propType, propDef);
+              var htmlElem = schemaHelpers.createElement(propName, propType, propDef);
               Polymer.dom(htmlElem).classList.add('item-property');
               htmlElem.hideTitle = self.layout === 'horizontal';
               Polymer.dom(htmlElem).setAttribute('data-name', propName);
@@ -456,10 +455,6 @@
 
               Polymer.dom(flexDiv).appendChild(htmlElem);
               Polymer.dom(resultHtml).appendChild(flexDiv);
-            } else {
-              console.log('Display type ' + displayType + ' not supported by at-form-array. Supported display types are ' + schemaHelpers.formatJson(self._supported_display_types));
-              console.log('Property definition: ' + schemaHelpers.formatJson(propDef));
-            }
           });
         }
         return resultHtml;
