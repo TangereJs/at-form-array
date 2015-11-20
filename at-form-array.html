@@ -102,12 +102,16 @@
           observer: 'layoutChanged'
         }
       },
+      $meta: [{
+        type: 'array',
+        title: 'Array'
+      }],
       _scopeCssViaAttr: true,
       // ------------------------------------------------------------
       // unsupported types
       // list type or xtype of the element that should not be supported by at-form-array
       // ------------------------------------------------------------
-      _unsupported_types: ["object"],
+      _unsupported_types: ["object", "array"],
       ready: function() {
         var self = this;
         this.$.addItemBtn.addEventListener('click', function(event) {
