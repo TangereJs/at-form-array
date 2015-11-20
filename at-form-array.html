@@ -68,10 +68,10 @@
           type: String,
           value: ''
         },
-        hideTitle: {
+        hideLabel: {
           type: Boolean,
           value: false,
-          observer: 'hideTitleChanged'
+          observer: 'hideLabelChanged'
         },
         disabled: {
           type: Boolean,
@@ -150,7 +150,7 @@
           }
         }
       },
-      hideTitleChanged: function(newValue, oldValue) {
+      hideLabelChanged: function(newValue, oldValue) {
         this.toggleClass("hide-label", newValue, this.$.labelContainer);
       },
       layoutChanged: function(newValue, oldValue) {
@@ -173,7 +173,7 @@
             self.toggleClass('vertical', false, item);
           });
           fieldWrappers.forEach(function(wrapper) {
-            Polymer.dom(wrapper).firstChild.hideTitle = true;
+            Polymer.dom(wrapper).firstChild.hideLabel = true;
           });
         } else if (newValue === 'vertical') {
           itemContainers.forEach(function(itemContainer) {
@@ -185,7 +185,7 @@
             self.toggleClass('vertical', true, item);
           });
           fieldWrappers.forEach(function(wrapper) {
-            Polymer.dom(wrapper).firstChild.hideTitle = false;
+            Polymer.dom(wrapper).firstChild.hideLabel = false;
           });
         } else {
           console.log('Layout value + ' + newValue + ' is unsupported. Supported values are horizontal and vertical.');
@@ -436,7 +436,7 @@
 
               var htmlElem = schemaHelpers.createElement(propName, propType, propDef);
               Polymer.dom(htmlElem).classList.add('item-property');
-              htmlElem.hideTitle = self.layout === 'horizontal';
+              htmlElem.hideLabel = self.layout === 'horizontal';
               Polymer.dom(htmlElem).setAttribute('data-name', propName);
               Polymer.dom(htmlElem).setAttribute('data-tagname', htmlElem.is);
               Polymer.dom(htmlElem).setAttribute('data-position', position);
