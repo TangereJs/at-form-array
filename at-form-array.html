@@ -214,7 +214,7 @@
       },
       _addNewItem: function () {
           var newEntry = this._createNewItemValueEntry(this.schema.items.properties);
-          this.value.push(newEntry);
+          this.push('value', newEntry);
           this._updateItemsContainerHtml();
           this._fireValueChangedEvent();
 
@@ -224,7 +224,7 @@
           }
       },
       _removeItem: function(position) {
-        this.value.splice(position, 1);
+        this.splice('value', position, 1);
 
         for (var i = position; i < this.value.length; i += 1) {
           var item = this.value[i];
@@ -240,6 +240,14 @@
         this.value[position] = this.value[prev];
         this.value[prev] = tmp;
 
+        // The hack of all hacks
+        // there is no mutation method for swapping elements in an array
+        // so we first swap elements (see three lines above)
+        // then add an empty element to the array using a non mutation method
+        // and them remove that empty element using a mutation method
+        this.value.push({});
+        this.pop('value');
+
         this._updateItemsContainerHtml();
         this._fireValueChangedEvent();
       },
@@ -250,6 +258,14 @@
         tmp = this.value[position];
         this.value[position] = this.value[next];
         this.value[next] = tmp;
+
+        // The hack of all hacks
+        // there is no mutation method for swapping elements in an array
+        // so we first swap elements (see three lines above)
+        // then add an empty element to the array using a non mutation method
+        // and them remove that empty element using a mutation method
+        this.value.push({});
+        this.pop('value');
 
         this._updateItemsContainerHtml();
         this._fireValueChangedEvent();
@@ -532,12 +548,13 @@
       },
       _updateItemValueEntry: function(position, property, value) {
         if (this.value[position][property] !== value) {
-          this.value[position][property] = value;
+          this.set('value.'+position+'.'+property, value);
+          // this.value[position][property] = value;
           this._fireValueChangedEvent();
         }
       },
       _removeItemValueEntry: function(position) {
-        this.value.splice(position, 1);
+        this.splice('value', position, 1);
         this._fireValueChangedEvent();
       },
       _fireValueChangedEvent: function() {
