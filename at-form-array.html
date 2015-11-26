@@ -94,7 +94,8 @@
           value: function() {
             return {};
           },
-          observer: 'schemaChanged'
+          observer: 'schemaChanged',
+          xtype: 'json'
         },
         layout: {
           type: String,
@@ -205,6 +206,15 @@
         }
       },
       schemaChanged: function(newValue, oldValue) {
+        if (Object.prototype.toString.call(newValue) === "[object String]") {
+          try {
+            newValue = JSON.parse(newValue);
+            this.schema = newValue;
+            return;
+          } catch (e) {
+            console.log(e);
+          }
+        }
         if (newValue && newValue.items && newValue.items.properties) {
           Polymer.dom(this.$.schemaNotAssigned).classList.add('hidden-div');
           Polymer.dom(this.$.schemaAssigned).classList.remove('hidden-div');
