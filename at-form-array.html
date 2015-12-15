@@ -96,7 +96,16 @@
         schema: {
           type: Object,
           value: function() {
-            return {};
+            return {
+              items: {
+                properties: {
+                  value: {
+                    type: "string",
+                    title: "Value"
+                  }
+                }
+              }
+            };
           },
           observer: 'schemaChanged',
           xtype: 'json'
@@ -104,7 +113,9 @@
         layout: {
           type: String,
           value: 'vertical',
-          observer: 'layoutChanged'
+          observer: 'layoutChanged',
+          xtype: 'enum',
+          xvaluelist: 'vertical,horizontal'
         },
         /**
          * Hides the element. When hidden nothing is displayed for the element
