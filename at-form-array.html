@@ -228,7 +228,10 @@
         }
       },
       valueChanged: function(newValue, oldValue) {
-        if (this.schema && this.schema.items && this.schema.items.properties) {
+        if (!this.schema) { return; }
+        var schema = this.schema.schema ? this.schema.schema : this.schema;
+
+        if (schema.items && schema.items.properties) {
           this._updateItemsContainerHtml();
         } else {
           console.log('Can not update value when schema is not assigned');
@@ -245,7 +248,12 @@
             console.log(e);
           }
         }
-        if (newValue && newValue.items && newValue.items.properties) {
+
+        if (!newValue) { return; }
+
+        var schema = newValue.schema ? newValue.schema : newValue;
+
+        if (newValue.items && newValue.items.properties) {
           Polymer.dom(this.$.schemaNotAssigned).classList.add('hidden-div');
           Polymer.dom(this.$.schemaAssigned).classList.remove('hidden-div');
 
