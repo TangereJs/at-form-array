@@ -40,6 +40,16 @@
     }
 
     .label-content {}
+
+    .item-container > .item-actions-container {
+      display: flex;
+      align-items: center;
+      width: 110px;
+    }
+
+    #headerWrapper > .header-padding {
+      width: 110px;
+    }
   </style>
   <template>
     <at-core-theme></at-core-theme>
@@ -49,9 +59,9 @@
       </div>
       <div id="schemaAssigned" class="hidden-div">
         <div id="headerWrapper" class="horizontal layout">
-          <div id="headerContainer" class="horizontal layout center flex-10">
+          <div id="headerContainer" class="horizontal layout center flex">
           </div>
-          <div id="headerPadding" class="flex-2"></div>
+          <div id="headerPadding" class="header-padding"></div>
         </div>
         <div id="itemsContainer" class="items-container vertical layout"></div>
         <div>
@@ -139,7 +149,7 @@
       // list type or xtype of the element that should not be supported by at-form-array
       // ------------------------------------------------------------
       _unsupported_types: ["object", "array"],
-      hideChanged: function (newValue, oldValue) {
+      hideChanged: function(newValue, oldValue) {
         var wrapper = Polymer.dom(this.root).querySelector('.field');
         this.toggleClass('hidden', newValue, wrapper);
       },
@@ -228,7 +238,9 @@
         }
       },
       valueChanged: function(newValue, oldValue) {
-        if (!this.schema) { return; }
+        if (!this.schema) {
+          return;
+        }
         var schema = this.schema.schema ? this.schema.schema : this.schema;
 
         if (schema.items && schema.items.properties) {
@@ -249,7 +261,9 @@
           }
         }
 
-        if (!newValue) { return; }
+        if (!newValue) {
+          return;
+        }
 
         var schema = newValue.schema ? newValue.schema : newValue;
 
@@ -409,7 +423,7 @@
 
         var itemActionsDiv = document.createElement('div');
         Polymer.dom(itemActionsDiv).classList.add('item-actions-container');
-        Polymer.dom(itemActionsDiv).classList.add('flex-2');
+        // Polymer.dom(itemActionsDiv).classList.add('flex-2');
         Polymer.dom(itemDiv).appendChild(itemActionsDiv);
 
         // ------------------------------
@@ -490,7 +504,8 @@
           Polymer.dom(resultHtml).classList.add('item');
           Polymer.dom(resultHtml).classList.add(self.layout);
           Polymer.dom(resultHtml).classList.add('layout');
-          Polymer.dom(resultHtml).classList.add('flex-10');
+          Polymer.dom(resultHtml).classList.add('flex');
+          // Polymer.dom(resultHtml).classList.add('flex-10');
 
           flexValue = 12 / propsLength;
           flexClass = 'flex-' + flexValue;
