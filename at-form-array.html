@@ -1,5 +1,6 @@
 <link rel="import" href="../layout/layout.html">
 <link rel="import" href="../at-core-form/schema-helpers-import.html">
+<link rel="import" href="../at-rule-edit/at-rule-engine.html">
 
 <dom-module id="at-form-array">
   <style>
@@ -241,9 +242,9 @@
         if (!this.schema) {
           return;
         }
-        var schema = this.schema.schema ? this.schema.schema : this.schema;
+        var properties = this._getSchemaProperties(this.schema);
 
-        if (schema.items && schema.items.properties) {
+        if (properties) {
           this._updateItemsContainerHtml();
         } else {
           console.log('Can not update value when schema is not assigned');
@@ -265,9 +266,9 @@
           return;
         }
 
-        var schema = newValue.schema ? newValue.schema : newValue;
+        var properties = this._getSchemaProperties(newValue);
 
-        if (newValue.items && newValue.items.properties) {
+        if (properties) {
           Polymer.dom(this.$.schemaNotAssigned).classList.add('hidden-div');
           Polymer.dom(this.$.schemaAssigned).classList.remove('hidden-div');
 
@@ -342,21 +343,22 @@
         return -1;
       },
       _updateHeader: function() {
-        var keyCount,
-          properties,
-          flexValue,
-          flexClass,
-          propDef,
-          headerText,
-          headerItem,
-          spanText,
-          self = this;
+        var keyCount;
+        var properties;
+        var flexValue;
+        var flexClass;
+        var propDef
+        var headerText;
+        var headerItem;
+        var spanText;
+        var self = this;
 
-        // clear current header
-        Polymer.dom(this.$.headerContainer).innerHTML = '';
+        properties = this._getSchemaProperties(this.schema);
 
-        if (this.schema && this.schema.items && this.schema.items.properties) {
-          properties = this.schema.items.properties;
+        if (properties) {
+          // clear current header
+          Polymer.dom(this.$.headerContainer).innerHTML = '';
+
           keyCount = Object.keys(properties).length;
           flexValue = 12 / keyCount;
           flexClass = 'flex-' + flexValue;
@@ -418,7 +420,11 @@
         Polymer.dom(itemDiv).classList.add(self.layout);
         Polymer.dom(itemDiv).classList.add('layout');
 
-        var itemHtml = this._createItemHtmlFromSchema(this.schema.items.properties, item, position);
+        var properties = this._getSchemaProperties(this.schema);
+        if (!properties) {
+          return;
+        }
+        var itemHtml = this._createItemHtmlFromSchema(properties, item, position);
         Polymer.dom(itemDiv).appendChild(itemHtml);
 
         var itemActionsDiv = document.createElement('div');
@@ -492,12 +498,12 @@
         return itemDiv;
       },
       _createItemHtmlFromSchema: function(properties, item, position) {
-        var self = this,
-          resultHtml = undefined,
-          flexValue,
-          flexClass,
-          propertyKeys = Object.keys(properties),
-          propsLength = propertyKeys.length;
+        var self = this;
+        var resultHtml = undefined;
+        var flexValue;
+        var flexClass;
+        var propertyKeys = Object.keys(properties);
+        var propsLength = propertyKeys.length;
 
         if (propsLength > 0) {
           resultHtml = document.createElement('div');
@@ -609,12 +615,90 @@
 
         return result;
       },
-      _updateItemValueEntry: function(position, property, value) {
-        if (this.value[position][property] !== value) {
-          this.set('value.' + position + '.' + property, value);
-          // this.value[position][property] = value;
-          this._fireValueChangedEvent();
+      _setItemPropertyState: function (position, property, state, value) {
+        // 1. get element by position and property name
+        var element = this._getElementFromForm(position, property);
+        if (element) {
+          // 2. set element's state
+          element[state] = value;
         }
+      },
+      updateFormElementValue: function (position, property, value) {
+        // 1. get element by position and property name
+        var element = this._getElementFromForm(position, property);
+        if (element) {
+          element.value = value;
+        }
+      },
+      _getElementFromForm: function (position, propertyName) {
+        var query = "." + propertyName + "[data-position="+ position +"]";
+        var element = Polymer.dom(this.$.itemsContainer).querySelector(query);
+        return element;
+      },
+      _updateItemValueEntry: function(position, property, value) {
+        if (!this._dataValidator) {
+          this._dataValidator = new DataValidator();
+        }
+
+        if (this.schema && this.schema.rules) {
+          if (!this.businessRulesEvaluationInProgress) {
+            this.businessRulesEvaluationInProgress = true;
+            // 1. clone current value
+            var arrayUserValue = this._cloneArrayValue(this.value);
+            // 2. update arrayUserValue with what user typed in
+            arrayUserValue[position][property] = value;
+
+            var arrayBusinessValue = this._dataValidator.validateArrayValue(arrayUserValue, this.schema.rules, this);
+
+            var arrayUserValueJSON = JSON.stringify(arrayUserValue);
+            var arrayBusinessValueJSON = JSON.stringify(arrayBusinessValue);
+            if (arrayUserValueJSON !== arrayBusinessValueJSON) {
+              var i, length = arrayUserValue.length;
+              for (i = 0; i < length; i++) {
+                var auItem = arrayUserValue[i];
+                var abItem = arrayBusinessValue[i];
+                var itemPropNames = Object.keys(auItem);
+                var self = this;
+                itemPropNames.forEach(function (itemPropName, index) {
+                  var auItemPropValue = auItem[itemPropName];
+                  var abItemPropValue = abItem[itemPropName];
+                  if (auItemPropValue !== abItemPropValue) {
+                    self.value[i][itemPropName] = abItemPropValue;
+                    self.updateFormElementValue(i, itemPropName, abItemPropValue);
+                  } else {
+                    self.value[i][itemPropName] = auItemPropValue;
+                    self.updateFormElementValue(i, itemPropName, auItemPropValue);
+                  }
+                });
+              }
+            }
+            this.businessRulesEvaluationInProgress = false;
+          }
+        } else {
+          if (this.value[position][property] !== value) {
+            // this.set('value.' + position + '.' + property, value);
+            this.value[position][property] = value;
+            this._fireValueChangedEvent();
+          }
+        }
+      },
+      _cloneArrayValue: function (originalArray) {
+        var clonedArray = [];
+        var i;
+        var oLen = originalArray.length;
+        for (i = 0; i < oLen; i++) {
+          var cItem = {};
+          var oItem = originalArray[i];
+          var propNames = Object.keys(oItem);
+          this._cloneObject(propNames, oItem, cItem);
+          clonedArray.push(cItem);
+        }
+        return clonedArray;
+      },
+      _cloneObject(propertyNames, source, destination) {
+        propertyNames.forEach(function (property, index) {
+          destination[property] = source[property];
+        });
       },
       _removeItemValueEntry: function(position) {
         this.splice('value', position, 1);
@@ -624,6 +708,34 @@
         this.fire('value-changed', {
           value: this.value
         });
+      },
+      // *ij* since array.schema can be either { items: { properties: {} } } or { schema: { items: { properties: {} } }, rules: [] }
+      // this helper function gets the propertis for both cases
+      // if schema is string its converted to object
+      // if an error occurs an undefined is returned as result
+      _getSchemaProperties: function(schema) {
+        var result = undefined;
+        if (this._isString(schema)) {
+          try {
+            schema = JSON.parse(schema);
+          } catch (e) {
+            console.log(e);
+            return result;
+          }
+        }
+        // *ij* what sorcery is this?
+        // so variable name is schema; but schema can have { schema: {}, rules: [] } structure or { items: properties: {} } structure
+        // so if schema contains schema we want contained schema; if not we want just schema
+        schema = schema.schema ? schema.schema : schema;
+
+        if (schema.items && schema.items.properties) {
+          result = schema.items.properties;
+        }
+
+        return result;
+      },
+      _isString: function(obj) {
+        return Object.prototype.toString.call(obj) === "[object String]";
       }
     });
   </script>

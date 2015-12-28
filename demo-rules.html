@@ -80,9 +80,45 @@
         }
       };
 
+      var rulesSchema =  {
+        properties: {
+          type: {
+            type: "string",
+            enum: [
+              "cat",
+              "dog",
+              "bird",
+              "reptile",
+              "other"
+            ],
+            default: "dog"
+          },
+          name: {
+            type: "string"
+          },
+          fixed: {
+            type: "boolean",
+            title: "spayed / neutered"
+          },
+          textareafun: {
+            type: "string",
+            xtype: "textarea",
+            title: "Textarea fun"
+          }
+        }
+      };
+
       var combinedSchema = {
         schema: jsonSchema,
-        rules: []
+        rules: [{
+          rule: {
+            conditions: {
+              kind: "all",
+              conditions: []
+            },
+            actions: []
+          }
+        }]
       };
 
       atFormArray.schema = combinedSchema;
@@ -114,8 +150,24 @@
       valueEcho.addEventListener('change', function(event) {
         var newValueJson = valueEcho.value;
         var newValue = JSON.parse(newValueJson);
+        var previousValue = atFormArray.value;
         atFormArray.value = newValue;
+        atFormArray.valueChanged(newValue, previousValue);
       });
+
+      var ruleEdit = document.getElementById('ruleEdit');
+      ruleEdit.schema = rulesSchema;
+      ruleEdit.value = combinedSchema.rules[0].rule;
+
+      ruleEdit.addEventListener('value-changed', function(event) {
+        var newValue = event.detail.value;
+        var _combinedSchema = {
+          schema: jsonSchema,
+          rules: newValue
+        };
+        atFormArray.schema = _combinedSchema;
+      });
+      debugger;
     });
   </script>
 </body>
