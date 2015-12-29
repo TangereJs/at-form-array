@@ -97,6 +97,12 @@
           type: Boolean,
           value: false
         },
+        valid: {
+          type: Boolean,
+          value: true,
+          notify: true,
+          readOnly: true
+        },
         value: {
           type: Array,
           value: function() {
@@ -150,6 +156,7 @@
       // list type or xtype of the element that should not be supported by at-form-array
       // ------------------------------------------------------------
       _unsupported_types: ["object", "array"],
+      set valid(newValue) {},
       hideChanged: function(newValue, oldValue) {
         var wrapper = Polymer.dom(this.root).querySelector('.field');
         this.toggleClass('hidden', newValue, wrapper);
@@ -679,7 +686,7 @@
                 var self = this;
                 itemPropNames.forEach(function (itemPropName, index) {
                   var auItemPropValue = auItem[itemPropName];
-                  self.updateFormElementValue(i, itemPropaName, auItemPropValue);
+                  self.updateFormElementValue(i, itemPropName, auItemPropValue);
                 });
               }
               this.value = arrayUserValue;

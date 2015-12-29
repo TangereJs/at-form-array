@@ -31,7 +31,10 @@
   <div class="horizontal layout">
     <div class="vertical layout flex-6">
       <h3>at-form-array demo</h3>
-      <at-form-checkbox id="disableArray" label="Disable at-form-array"></at-form-checkbox>
+      <div class="horizontal layout">
+        <at-form-checkbox id="disableArray" label="Disable at-form-array"></at-form-checkbox>
+        <at-form-checkbox id="validArray" label="Is valid?" disabled></at-form-checkbox>
+      </div>
       <at-form-array label="Random people" id="atFormArray" layout="horizontal"></at-form-array>
     </div>
     <div class="vertical layout flex-6">
@@ -167,7 +170,12 @@
         };
         atFormArray.schema = _combinedSchema;
       });
-      // debugger;
+
+      var validArray = document.getElementById('validArray');
+      validArray.value = atFormArray.valid;
+      atFormArray.addEventListener('valid-changed', function(event){
+        validArray.value = atFormArray.valid;
+      });
     });
   </script>
 </body>
