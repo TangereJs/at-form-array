@@ -163,11 +163,11 @@
         var newValue = event.detail.value;
         var _combinedSchema = {
           schema: jsonSchema,
-          rules: newValue
+          rules: [ { rule: newValue } ]
         };
         atFormArray.schema = _combinedSchema;
       });
-      debugger;
+      // debugger;
     });
   </script>
 </body>

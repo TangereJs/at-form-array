@@ -631,7 +631,7 @@
         }
       },
       _getElementFromForm: function (position, propertyName) {
-        var query = "." + propertyName + "[data-position="+ position +"]";
+        var query = "." + propertyName + "[data-position=\""+ position +"\"]";
         var element = Polymer.dom(this.$.itemsContainer).querySelector(query);
         return element;
       },
@@ -671,8 +671,21 @@
                   }
                 });
               }
+            } else {
+              var i, length = arrayUserValue.length;
+              for (i = 0; i < length; i++) {
+                var auItem = arrayUserValue[i];
+                var itemPropNames = Object.keys(auItem);
+                var self = this;
+                itemPropNames.forEach(function (itemPropName, index) {
+                  var auItemPropValue = auItem[itemPropName];
+                  self.updateFormElementValue(i, itemPropaName, auItemPropValue);
+                });
+              }
+              this.value = arrayUserValue;
             }
             this.businessRulesEvaluationInProgress = false;
+            this._fireValueChangedEvent();
           }
         } else {
           if (this.value[position][property] !== value) {
