@@ -51,11 +51,20 @@
     #headerWrapper > .header-padding {
       width: 110px;
     }
+
+    --error-color: #e41e2b;
+    .label-container.error {
+      color: var(--error-color);
+    }
+
+    .error-container.error {
+      color: var(--error-color);
+    }
   </style>
   <template>
     <at-core-theme></at-core-theme>
     <div class="field vertical layout">
-      <div id="labelContainer">
+      <div id="labelContainer" class="label-container">
         <h4 class="label-content">{{label}}</h4>
       </div>
       <div id="schemaAssigned" class="hidden-div">
@@ -71,6 +80,9 @@
       </div>
       <div id="schemaNotAssigned">
         <p>Schema not assigned.</p>
+      </div>
+      <div id="errorContainer" class="error-container">
+        <p id="errorMessage" class="error-message"></p>
       </div>
     </div>
   </template>
@@ -95,7 +107,8 @@
         },
         required: {
           type: Boolean,
-          value: false
+          value: false,
+          observer: 'requiredChanged'
         },
         valid: {
           type: Boolean,
@@ -160,6 +173,9 @@
       hideChanged: function(newValue, oldValue) {
         var wrapper = Polymer.dom(this.root).querySelector('.field');
         this.toggleClass('hidden', newValue, wrapper);
+        if (this._isReady) {
+          this.validate();
+        }
       },
       ready: function() {
         var self = this;
@@ -168,6 +184,7 @@
           self._addNewItem();
         });
         this.toggleClass('hide-header', this.layout === 'vertical', this.$.headerWrapper);
+        this._isReady = true;
       },
       disabledChanged: function(newValue, oldValue) {
         /* ij - to easily and quickly select all elements that need to be disabled
@@ -202,6 +219,38 @@
             button.removeAttribute('disabled');
           }
         }
+        if (this._isReady) {
+          this.validate();
+        }
+      },
+      requiredChanged: function (newValue, oldValue) {
+        if (this._isReady) {
+          this.validate();
+        }
+      },
+      validate: function () {
+        if (!this._isReady) {
+          return;
+        }
+        var valid = this.hide || this.disabled;
+        if (!valid) {
+          valid = !this.required || (this.required && this.value.length > 0);
+        }
+
+        // update valid UI
+        var labelContainer = this.$.labelContainer;
+        this.toggleClass('error', !valid, labelContainer);
+        var errorContainer = this.$.errorContainer;
+        this.toggleClass('error', !valid, errorContainer);
+
+        var errorMessageHtml = this.$.errorMessage;
+        if (!valid) {
+          Polymer.dom(errorMessageHtml).innerHTML = 'This field is required';
+        } else {
+          Polymer.dom(errorMessageHtml).innerHTML = '';
+        }
+
+        this._setValid(valid);
       },
       hideLabelChanged: function(newValue, oldValue) {
         this.toggleClass("hidden", newValue, this.$.labelContainer);
@@ -725,6 +774,9 @@
         this._fireValueChangedEvent();
       },
       _fireValueChangedEvent: function() {
+        if (this._isReady) {
+          this.validate();
+        }
         this.fire('value-changed', {
           value: this.value
         });
