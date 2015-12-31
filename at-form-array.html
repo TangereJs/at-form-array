@@ -561,10 +561,13 @@
       _createItemHtmlFromSchema: function(properties, item, position) {
         var self = this;
         var resultHtml = document.createElement('at-form-complex');
+        resultHtml.layout = self.layout;
         resultHtml.schema = {
           properties: properties
         };
-        resultHtml.value = item;
+        var assignValue = {};
+        this._cloneObject(Object.keys(item), item, assignValue);
+        resultHtml.value = assignValue;
         Polymer.dom(resultHtml).setAttribute('data-position', position);
         Polymer.dom(resultHtml).classList.add('item');
         Polymer.dom(resultHtml).classList.add(self.layout);
@@ -652,45 +655,35 @@
       },
       _setItemPropertyState: function(position, property, state, value) {
         // 1. get element by position and property name
-        var element = this._getElementFromForm(position, property);
+        var element = this._getElementFromForm(position);
         if (element) {
           // 2. set element's state
-          element[state] = value;
+          element.setElementState(property, state, value);
         }
       },
-      updateFormElementValue: function(position, property, value) {
+      updateFormElementValue: function(position, value) {
         // 1. get element by position and property name
-        var element = this._getElementFromForm(position, property);
+        var element = this._getElementFromForm(position);
         if (element) {
           element.value = value;
         }
       },
-      _getElementFromForm: function(position, propertyName) {
-        var query = "." + propertyName + "[data-position=\"" + position + "\"]";
+      _getElementFromForm: function(position) {
+        var query = ".item" + "[data-position=\"" + position + "\"]";
         var element = Polymer.dom(this.$.itemsContainer).querySelector(query);
         return element;
       },
       _updateValue: function (position, value) {
-        // var prevValue = this.value[position];
-        // var prevValueJson = JSON.stringify(prevValue);
-        // var valueJson = JSON.stringify(value);
-        // if (prevValueJson !== valueJson) {
-          // this.value[position] = value;
-          this._fireValueChangedEvent();
-        // }
-      },
-      _updateItemValueEntry: function(position, property, value) {
         if (!this._dataValidator) {
           this._dataValidator = new DataValidator();
         }
-
         if (this.schema && this.schema.rules) {
           if (!this.businessRulesEvaluationInProgress) {
             this.businessRulesEvaluationInProgress = true;
             // 1. clone current value
             var arrayUserValue = this._cloneArrayValue(this.value);
             // 2. update arrayUserValue with what user typed in
-            arrayUserValue[position][property] = value;
+            arrayUserValue[position] = value;
 
             var arrayBusinessValue = this._dataValidator.validateArrayValue(arrayUserValue, this.schema.rules, this);
 
@@ -701,30 +694,16 @@
               for (i = 0; i < length; i++) {
                 var auItem = arrayUserValue[i];
                 var abItem = arrayBusinessValue[i];
-                var itemPropNames = Object.keys(auItem);
-                var self = this;
-                itemPropNames.forEach(function(itemPropName, index) {
-                  var auItemPropValue = auItem[itemPropName];
-                  var abItemPropValue = abItem[itemPropName];
-                  if (auItemPropValue !== abItemPropValue) {
-                    self.value[i][itemPropName] = abItemPropValue;
-                    self.updateFormElementValue(i, itemPropName, abItemPropValue);
-                  } else {
-                    self.value[i][itemPropName] = auItemPropValue;
-                    self.updateFormElementValue(i, itemPropName, auItemPropValue);
-                  }
-                });
+                var clonedAbItem = {};
+                this._cloneObject(Object.keys(abItem), abItem, clonedAbItem);
+                this.value[i] = clonedAbItem;
+                this.updateFormElementValue(i, clonedAbItem);
               }
             } else {
               var i, length = arrayUserValue.length;
               for (i = 0; i < length; i++) {
                 var auItem = arrayUserValue[i];
-                var itemPropNames = Object.keys(auItem);
-                var self = this;
-                itemPropNames.forEach(function(itemPropName, index) {
-                  var auItemPropValue = auItem[itemPropName];
-                  self.updateFormElementValue(i, itemPropName, auItemPropValue);
-                });
+                this.updateFormElementValue(i, auItem);
               }
               this.value = arrayUserValue;
             }
@@ -732,9 +711,11 @@
             this._fireValueChangedEvent();
           }
         } else {
-          if (this.value[position][property] !== value) {
-            // this.set('value.' + position + '.' + property, value);
-            this.value[position][property] = value;
+          var prevValue = this.value[position];
+          var prevValueJson = JSON.stringify(prevValue);
+          var valueJson = JSON.stringify(value);
+          if (prevValueJson !== valueJson) {
+            this.value[position] = value;
             this._fireValueChangedEvent();
           }
         }

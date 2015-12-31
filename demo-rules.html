@@ -43,7 +43,7 @@
   </div>
   <div class="vertical layout">
     <h3>at-form-array value echo</h3>
-    <at-form-codemirror id="valueEcho" class="valueEcho"></at-form-codemirror>
+    <at-form-codemirror id="valueEcho" class="valueEcho" max-lines="0"></at-form-codemirror>
   </div>
   <br>
   <script>
@@ -117,9 +117,19 @@
           rule: {
             conditions: {
               kind: "all",
-              conditions: []
+              conditions: [{
+                name: "type",
+                operator: "present"
+              }]
             },
-            actions: []
+            actions: [{
+              actionName: "alert",
+              message: "Demo alert text!"
+            }, {
+              actionName: "updateField",
+              fieldName: "textareafun",
+              updateTo: "Happy next year!"
+            }]
           }
         }]
       };
