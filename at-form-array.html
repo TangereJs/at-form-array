@@ -338,7 +338,7 @@
       },
       _addNewItem: function() {
         var newEntry = this._createNewItemValueEntry(this.schema.items.properties);
-        this.push('value', newEntry);
+        this.value.push(newEntry);
         this._updateItemsContainerHtml();
         this._fireValueChangedEvent();
 
@@ -348,7 +348,7 @@
         }
       },
       _removeItem: function(position) {
-        this.splice('value', position, 1);
+        var tmpValue = this.value.splice(position, 1);
 
         for (var i = position; i < this.value.length; i += 1) {
           var item = this.value[i];
@@ -369,8 +369,8 @@
         // so we first swap elements (see three lines above)
         // then add an empty element to the array using a non mutation method
         // and them remove that empty element using a mutation method
-        this.value.push({});
-        this.pop('value');
+        // this.value.push({});
+        // this.pop('value');
 
         this._updateItemsContainerHtml();
         this._fireValueChangedEvent();
@@ -388,8 +388,8 @@
         // so we first swap elements (see three lines above)
         // then add an empty element to the array using a non mutation method
         // and them remove that empty element using a mutation method
-        this.value.push({});
-        this.pop('value');
+        // this.value.push({});
+        // this.pop('value');
 
         this._updateItemsContainerHtml();
         this._fireValueChangedEvent();
@@ -673,7 +673,7 @@
         var element = Polymer.dom(this.$.itemsContainer).querySelector(query);
         return element;
       },
-      _updateValue: function (position, value) {
+      _updateValue: function(position, value) {
         if (!this._dataValidator) {
           this._dataValidator = new DataValidator();
         }
@@ -711,13 +711,13 @@
             this._fireValueChangedEvent();
           }
         } else {
-          var prevValue = this.value[position];
-          var prevValueJson = JSON.stringify(prevValue);
-          var valueJson = JSON.stringify(value);
-          if (prevValueJson !== valueJson) {
+          // var prevValue = this.value[position];
+          // var prevValueJson = JSON.stringify(prevValue);
+          // var valueJson = JSON.stringify(value);
+          // if (prevValueJson !== valueJson) {
             this.value[position] = value;
             this._fireValueChangedEvent();
-          }
+          // }
         }
       },
       _cloneArrayValue: function(originalArray) {
@@ -733,7 +733,7 @@
         }
         return clonedArray;
       },
-      _cloneObject(propertyNames, source, destination) {
+      _cloneObject: function(propertyNames, source, destination) {
         propertyNames.forEach(function(property, index) {
           destination[property] = source[property];
         });
