@@ -83,7 +83,7 @@
         }
       };
 
-      var rulesSchema =  {
+      var rulesSchema = {
         properties: {
           type: {
             type: "string",
@@ -111,30 +111,27 @@
         }
       };
 
-      var combinedSchema = {
-        schema: jsonSchema,
-        rules: [{
-          rule: {
-            conditions: {
-              kind: "all",
-              conditions: [{
-                name: "type",
-                operator: "present"
-              }]
-            },
-            actions: [{
-              actionName: "alert",
-              message: "Demo alert text!"
-            }, {
-              actionName: "updateField",
-              fieldName: "textareafun",
-              updateTo: "Happy next year!"
+      jsonSchema.rules = [{
+        rule: {
+          conditions: {
+            kind: "all",
+            conditions: [{
+              name: "type",
+              operator: "present"
             }]
-          }
-        }]
-      };
+          },
+          actions: [{
+            actionName: "alert",
+            message: "Demo alert text!"
+          }, {
+            actionName: "updateField",
+            fieldName: "textareafun",
+            updateTo: "Happy next year!"
+          }]
+        }
+      }];
 
-      atFormArray.schema = combinedSchema;
+      atFormArray.schema = jsonSchema;
 
       atFormArray.value = [{
         "type": "dog",
@@ -170,20 +167,19 @@
 
       var ruleEdit = document.getElementById('ruleEdit');
       ruleEdit.schema = rulesSchema;
-      ruleEdit.value = combinedSchema.rules[0].rule;
+      ruleEdit.value = jsonSchema.rules[0].rule;
 
       ruleEdit.addEventListener('value-changed', function(event) {
         var newValue = event.detail.value;
-        var _combinedSchema = {
-          schema: jsonSchema,
-          rules: [ { rule: newValue } ]
-        };
-        atFormArray.schema = _combinedSchema;
+        jsonSchema.rules = [{
+          rule: newValue
+        }];
+        atFormArray.schema = jsonSchema;
       });
 
       var validArray = document.getElementById('validArray');
       validArray.value = atFormArray.valid;
-      atFormArray.addEventListener('valid-changed', function(event){
+      atFormArray.addEventListener('valid-changed', function(event) {
         validArray.value = atFormArray.valid;
       });
     });

@@ -764,10 +764,6 @@
             return result;
           }
         }
-        // *ij* what sorcery is this?
-        // so variable name is schema; but schema can have { schema: {}, rules: [] } structure or { items: properties: {} } structure
-        // so if schema contains schema we want contained schema; if not we want just schema
-        schema = schema.schema ? schema.schema : schema;
 
         if (schema.items && schema.items.properties) {
           result = schema.items.properties;
