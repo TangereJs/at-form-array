@@ -253,6 +253,10 @@
 
         this._setValid(valid);
       },
+      /// QUICK FIX remove when at-form-array gets validation behavior
+      clearUIValidState: function () {
+
+      },
       hideLabelChanged: function(newValue, oldValue) {
         this.toggleClass("hidden", newValue, this.$.labelContainer);
       },
