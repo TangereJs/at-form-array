@@ -257,6 +257,10 @@
       clearUIValidState: function () {
 
       },
+      focus: function () {
+        var addItemBtn = this.$.addItemBtn;
+        addItemBtn.focus();
+      },
       hideLabelChanged: function(newValue, oldValue) {
         this.toggleClass("hidden", newValue, this.$.labelContainer);
       },
