@@ -44,8 +44,6 @@
     .label-content {}
 
     .item-container > .item-actions-container {
-      /*display: flex;*/
-      align-self: center;
       width: 110px;
     }
 
@@ -273,6 +271,7 @@
         itemContainers = itemsContainer.querySelectorAll('.item-container');
         items = itemsContainer.querySelectorAll('.item');
         fieldWrappers = itemsContainer.querySelectorAll('.field-wrapper');
+        var itemActionsContainers = Polymer.dom(itemsContainer).querySelectorAll('.item-actions-container');
 
         if (newValue === 'horizontal') {
           itemContainers.forEach(function(itemContainer) {
@@ -288,6 +287,9 @@
           fieldWrappers.forEach(function(wrapper) {
             Polymer.dom(wrapper).firstChild.hideLabel = true;
           });
+          itemActionsContainers.forEach(function (itemActionsContainer, index) {
+            itemActionsContainer.style['align-self'] = 'center';
+          });
         } else if (newValue === 'vertical') {
           itemContainers.forEach(function(itemContainer) {
             self.toggleClass('horizontal', false, itemContainer);
@@ -301,6 +303,9 @@
           });
           fieldWrappers.forEach(function(wrapper) {
             Polymer.dom(wrapper).firstChild.hideLabel = false;
+          });
+          itemActionsContainers.forEach(function (itemActionsContainer, index) {
+            itemActionsContainer.style['align-self'] = 'flex-start';
           });
         } else {
           console.log('Layout value + ' + newValue + ' is unsupported. Supported values are horizontal and vertical.');
