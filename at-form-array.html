@@ -589,10 +589,11 @@
         resultHtml.layout = self.layout;
 
         resultHtml.addEventListener('value-changed', function(event) {
-          // debugger;
+          var _resultHtml = resultHtml;
           event.stopPropagation();
-          var position = self._getPosition(event.target);
+          var position = parseInt(_resultHtml.getAttribute('data-position'));
           var value = event.detail.value;
+          // debugger;
 
           self._updateValue(position, value);
         });
