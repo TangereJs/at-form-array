@@ -191,10 +191,10 @@
           ie. at-form-input element would have data-tagname="at-form-input" set
           now all at-form-* elements can be selected with [data-tagname^="at-form-"] selector
         */
-        var afNodeList = Polymer.dom(this.root).querySelectorAll('[data-tagname^="at-form-"]'),
-          i, node,
-          buttons = Polymer.dom(this.root).querySelectorAll('button'),
-          button;
+        var afNodeList = Polymer.dom(this.root).querySelectorAll('at-form-complex');
+        var i, node;
+        var buttons = Polymer.dom(this.root).querySelectorAll('button');
+        var button;
 
         if (newValue) {
           for (i = 0; i < afNodeList.length; i++) {
@@ -236,6 +236,14 @@
           valid = !this.required || (this.required && this.value.length > 0);
         }
 
+        var formComplexElements = this.getElementsByTagName('at-form-complex');
+        var fceLen = formComplexElements.length;
+        for (var i = 0; i < fceLen && valid; i++) {
+          var formComplex = formComplexElements[i];
+          var complexValid = formComplex.valid;
+          valid = valid && complexValid;
+        }
+
         // update valid UI
         var labelContainer = this.$.labelContainer;
         this.toggleClass('error', !valid, labelContainer);
@@ -252,10 +260,10 @@
         this._setValid(valid);
       },
       /// QUICK FIX remove when at-form-array gets validation behavior
-      clearUIValidState: function () {
+      clearUIValidState: function() {
 
       },
-      focus: function () {
+      focus: function() {
         var addItemBtn = this.$.addItemBtn;
         addItemBtn.focus();
       },
@@ -287,7 +295,7 @@
           fieldWrappers.forEach(function(wrapper) {
             Polymer.dom(wrapper).firstChild.hideLabel = true;
           });
-          itemActionsContainers.forEach(function (itemActionsContainer, index) {
+          itemActionsContainers.forEach(function(itemActionsContainer, index) {
             itemActionsContainer.style['align-self'] = 'center';
           });
         } else if (newValue === 'vertical') {
@@ -304,7 +312,7 @@
           fieldWrappers.forEach(function(wrapper) {
             Polymer.dom(wrapper).firstChild.hideLabel = false;
           });
-          itemActionsContainers.forEach(function (itemActionsContainer, index) {
+          itemActionsContainers.forEach(function(itemActionsContainer, index) {
             itemActionsContainer.style['align-self'] = 'flex-start';
           });
         } else {
@@ -575,8 +583,13 @@
         var self = this;
         var resultHtml = document.createElement('at-form-complex');
         resultHtml.layout = self.layout;
+        var rules = [];
+        if (self.schema.rules) {
+          rules = this.schema.rules;
+        }
         resultHtml.schema = {
-          properties: properties
+          properties: properties,
+          rules: rules
         };
         var assignValue = {};
         this._cloneObject(Object.keys(item), item, assignValue);
@@ -593,9 +606,11 @@
           event.stopPropagation();
           var position = parseInt(_resultHtml.getAttribute('data-position'));
           var value = event.detail.value;
-          // debugger;
-
-          self._updateValue(position, value);
+          // this is here to filter value-changed event from at-form-complex individual elements
+          // for unknown reasons we get value-changed twice here, once for at-form-complex.value-changed and another one for at-form-complex.individualElement.value-changed
+          if (event.srcElement.is === "at-form-complex") {
+            self._updateValue(position, value);
+          }
         });
 
         return resultHtml;
@@ -688,51 +703,9 @@
         return element;
       },
       _updateValue: function(position, value) {
-        if (!this._dataValidator) {
-          this._dataValidator = new DataValidator();
-        }
-        if (this.schema && this.schema.rules) {
-          if (!this.businessRulesEvaluationInProgress) {
-            this.businessRulesEvaluationInProgress = true;
-            // 1. clone current value
-            var arrayUserValue = this._cloneArrayValue(this.value);
-            // 2. update arrayUserValue with what user typed in
-            arrayUserValue[position] = value;
-
-            var arrayBusinessValue = this._dataValidator.validateArrayValue(arrayUserValue, this.schema.rules, this);
-
-            var arrayUserValueJSON = JSON.stringify(arrayUserValue);
-            var arrayBusinessValueJSON = JSON.stringify(arrayBusinessValue);
-            if (arrayUserValueJSON !== arrayBusinessValueJSON) {
-              var i, length = arrayUserValue.length;
-              for (i = 0; i < length; i++) {
-                var auItem = arrayUserValue[i];
-                var abItem = arrayBusinessValue[i];
-                var clonedAbItem = {};
-                this._cloneObject(Object.keys(abItem), abItem, clonedAbItem);
-                this.value[i] = clonedAbItem;
-                this.updateFormElementValue(i, clonedAbItem);
-              }
-            } else {
-              var i, length = arrayUserValue.length;
-              for (i = 0; i < length; i++) {
-                var auItem = arrayUserValue[i];
-                this.updateFormElementValue(i, auItem);
-              }
-              this.value = arrayUserValue;
-            }
-            this.businessRulesEvaluationInProgress = false;
-            this._fireValueChangedEvent();
-          }
-        } else {
-          // var prevValue = this.value[position];
-          // var prevValueJson = JSON.stringify(prevValue);
-          // var valueJson = JSON.stringify(value);
-          // if (prevValueJson !== valueJson) {
-            this.value[position] = value;
-            this._fireValueChangedEvent();
-          // }
-        }
+        this.value[position] = value;
+        this.validate();
+        this._fireValueChangedEvent();
       },
       _cloneArrayValue: function(originalArray) {
         var clonedArray = [];
