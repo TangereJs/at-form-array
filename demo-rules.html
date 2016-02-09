@@ -68,7 +68,8 @@
               "default": "dog"
             },
             "name": {
-              "type": "string"
+              "type": "string",
+              "required": true
             },
             "fixed": {
               "type": "boolean",
@@ -98,6 +99,7 @@
           },
           name: {
             type: "string"
+            
           },
           fixed: {
             type: "boolean",
@@ -136,7 +138,8 @@
       }];
 
       atFormArray.schema = jsonSchema;
-
+      atFormArray.required = true;
+      
       atFormArray.value = [{
         "type": "dog",
         "name": "Hector",
