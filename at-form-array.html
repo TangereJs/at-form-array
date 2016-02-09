@@ -252,7 +252,7 @@
 
         var errorMessageHtml = this.$.errorMessage;
         if (!valid) {
-          Polymer.dom(errorMessageHtml).innerHTML = 'This field is required';
+          Polymer.dom(errorMessageHtml).innerHTML = 'At least one item is required';
         } else {
           Polymer.dom(errorMessageHtml).innerHTML = '';
         }
