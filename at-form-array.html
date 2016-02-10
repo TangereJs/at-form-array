@@ -332,6 +332,7 @@
           console.log('Can not update value when schema is not assigned');
           return;
         }
+        this.validate();
       },
       schemaChanged: function(newValue, oldValue) {
         if (Object.prototype.toString.call(newValue) === "[object String]") {
