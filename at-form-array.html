@@ -361,59 +361,121 @@
       _addNewItem: function() {
         var newEntry = this._createNewItemValueEntry(this.schema.items.properties);
         this.value.push(newEntry);
-        this._updateItemsContainerHtml();
-        this._fireValueChangedEvent();
+        var position = this.value.length-1;
 
-        var nameFieldList = Polymer.dom(this.$.itemsContainer).querySelectorAll(".name");
-        if (nameFieldList.length > 0) {
-          nameFieldList[nameFieldList.length - 1].focus();
+        var newItemHtml = this._createNewItemContainerHtml(newEntry, position);
+        Polymer.dom(this.$.itemsContainer).appendChild(newItemHtml);
+
+        var formComplex = Polymer.dom(newItemHtml).querySelector("at-form-complex");
+        if (formComplex) {
+          formComplex.focus();
         }
+
+        // update buttons for previous element
+        var itemContainer = Polymer.dom(newItemHtml).previousSibling;
+        this._updateItemActionButtons(itemContainer, position-1, position+1);
+
+        this._fireValueChangedEvent();
       },
       _removeItem: function(position) {
-        var tmpValue = this.value.splice(position, 1);
+        var removedEntry = this.value.splice(position, 1);
 
-        for (var i = position; i < this.value.length; i += 1) {
-          var item = this.value[i];
+        // remove html for the removed entry
+        var itemsContainer = this.$.itemsContainer;
+        var itemContainers = Polymer.dom(itemsContainer).querySelectorAll('.item-container');
+        var itemContainerAtPosition = itemContainers[position];
+        Polymer.dom(itemsContainer).removeChild(itemContainerAtPosition);
+        Polymer.dom.flush();
+
+        // update positions for the remaining entries
+        var valueLength = this.value.length;
+        itemContainers = Polymer.dom(itemsContainer).querySelectorAll('.item-container');
+        for (var i = position; i < valueLength; i += 1) {
+          var itemContainer = itemContainers[i];
+          var formComplex = Polymer.dom(itemContainer).querySelector('at-form-complex');
+          if (formComplex) {
+            Polymer.dom(formComplex).setAttribute('data-position', i);
+          }
+          // update buttons
+          this._updateItemActionButtons(itemContainer, i, valueLength);
         }
-        this._updateItemsContainerHtml();
+        if (position === valueLength) {
+          // update data attribute for the last element
+          itemContainer = itemContainers[position-1];
+          formComplex = Polymer.dom(itemContainer).querySelector('at-form-complex');
+          if (formComplex) {
+            Polymer.dom(formComplex).setAttribute('data-position', position-1);
+          }
+          // update buttons for last element
+          this._updateItemActionButtons(itemContainer, position-1, valueLength-1);
+        }
+
         this._fireValueChangedEvent();
       },
       _moveItemUp: function(position) {
         var prev = position - 1;
         var tmp;
-
+        var valueLength = this.value.length;
         tmp = this.value[position];
         this.value[position] = this.value[prev];
         this.value[prev] = tmp;
 
-        // The hack of all hacks
-        // there is no mutation method for swapping elements in an array
-        // so we first swap elements (see three lines above)
-        // then add an empty element to the array using a non mutation method
-        // and them remove that empty element using a mutation method
-        // this.value.push({});
-        // this.pop('value');
+        // replace item html positions
+        var itemsContainer = this.$.itemsContainer;
+        var itemContainers = Polymer.dom(itemsContainer).querySelectorAll('.item-container');
+        var itemHtmlAtPosition = itemContainers[position];
+        var itemHtmlAtPrev = itemContainers[prev];
 
-        this._updateItemsContainerHtml();
+        Polymer.dom(itemsContainer).removeChild(itemHtmlAtPosition);
+        Polymer.dom(itemsContainer).insertBefore(itemHtmlAtPosition, itemHtmlAtPrev);
+
+        // replace position attributes
+        var formComplex = Polymer.dom(itemHtmlAtPosition).querySelector('at-form-complex');
+        if (formComplex) {
+          Polymer.dom(formComplex).setAttribute('data-position', prev);
+        }
+        formComplex = Polymer.dom(itemHtmlAtPrev).querySelector('at-form-complex');
+        if (formComplex) {
+          Polymer.dom(formComplex).setAttribute('data-position', position);
+        }
+
+        // update action buttons
+        this._updateItemActionButtons(itemHtmlAtPosition, prev, valueLength);
+        this._updateItemActionButtons(itemHtmlAtPrev, position, valueLength);
+
         this._fireValueChangedEvent();
       },
       _moveItemDown: function(position) {
         var next = position + 1;
         var tmp;
-
+        var valueLength = this.value.length;
         tmp = this.value[position];
         this.value[position] = this.value[next];
         this.value[next] = tmp;
 
-        // The hack of all hacks
-        // there is no mutation method for swapping elements in an array
-        // so we first swap elements (see three lines above)
-        // then add an empty element to the array using a non mutation method
-        // and them remove that empty element using a mutation method
-        // this.value.push({});
-        // this.pop('value');
+        // replace item html positions
+        var itemsContainer = this.$.itemsContainer;
+        var itemContainers = Polymer.dom(itemsContainer).querySelectorAll('.item-container');
+        var itemHtmlAtPosition = itemContainers[position];
+        var itemHtmlAtNext = itemContainers[next];
 
-        this._updateItemsContainerHtml();
+        Polymer.dom(itemsContainer).removeChild(itemHtmlAtNext);
+        Polymer.dom(itemsContainer).insertBefore(itemHtmlAtNext, itemHtmlAtPosition);
+
+        // replace position attributes
+        var formComplex = Polymer.dom(itemHtmlAtPosition).querySelector('at-form-complex');
+        if (formComplex) {
+          Polymer.dom(formComplex).setAttribute('data-position', next);
+        }
+        formComplex = Polymer.dom(itemHtmlAtNext).querySelector('at-form-complex');
+        if (formComplex) {
+          Polymer.dom(formComplex).setAttribute('data-position', position);
+        }
+
+        // update action buttons
+        this._updateItemActionButtons(itemHtmlAtPosition, next, valueLength);
+        this._updateItemActionButtons(itemHtmlAtNext, position, valueLength);
+
         this._fireValueChangedEvent();
       },
       _getPosition: function(button) {
@@ -618,10 +680,22 @@
         return resultHtml;
       },
       _updateItemContainerHtml: function(existingItemHtml, item, position) {
-        var afInput, actionButotns, actionButtonsIndex, actionButton, moveUpBtn, moveDownBtn;
-
         var itemHtml = Polymer.dom(existingItemHtml).querySelector('.item');
         this._updateItemHtml(itemHtml, item, position);
+        this._updateItemActionButtons(existingItemHtml, position, this.value.length);
+      },
+      _updateItemHtml: function(existingItemHtml, item, position) {
+        var prevValue = existingItemHtml.value;
+        existingItemHtml.value = item;
+        // existingItemHtml.valueChanged(item, prevValue);
+        Polymer.dom(existingItemHtml).setAttribute('data-position', position);
+      },
+      _updateItemActionButtons: function (existingItemHtml, position, maxItems) {
+        var actionButotns;
+        var actionButtonsIndex;
+        var actionButton;
+        var moveUpBtn;
+        var moveDownBtn;
 
         actionButotns = Polymer.dom(existingItemHtml).querySelectorAll('.action-button');
         for (actionButtonsIndex = 0; actionButtonsIndex < actionButotns.length; actionButtonsIndex += 1) {
@@ -633,30 +707,17 @@
         moveDownBtn = Polymer.dom(existingItemHtml).querySelector('[data-action-type="movedown"]');
         if (position === 0) {
           Polymer.dom(moveUpBtn).classList.add('item-action-hidden');
-          if (this.value.length > 1) {
+          if (maxItems > 1) {
             Polymer.dom(moveDownBtn).classList.remove('item-action-hidden');
           }
         }
-        if (position > 0 && position < this.value.length - 1) {
+        if (position > 0 && position < maxItems - 1) {
           Polymer.dom(moveUpBtn).classList.remove('item-action-hidden');
           Polymer.dom(moveDownBtn).classList.remove('item-action-hidden');
         }
-        if (position === this.value.length - 1) {
+        if (position === maxItems) {
           Polymer.dom(moveDownBtn).classList.add('item-action-hidden');
         }
-      },
-      _updateItemHtml: function(existingItemHtml, item, position) {
-        var prevValue = existingItemHtml.value;
-        existingItemHtml.value = item;
-        existingItemHtml.valueChanged(item, prevValue);
-        Polymer.dom(existingItemHtml).setAttribute('data-position', position);
-        // var properties = Polymer.dom(existingItemHtml).querySelectorAll('.item-property');
-        // var index, prop;
-        // for (index = 0; index < properties.length; index += 1) {
-        //   prop = properties[index];
-        //   prop.value = item[prop.getAttribute('data-name')];
-        //   Polymer.dom(prop).setAttribute('data-position', position);
-        // }
       },
       _createNewItemValueEntry: function(properties) {
         var result = {};
