@@ -399,7 +399,7 @@
           // update buttons
           this._updateItemActionButtons(itemContainer, i, valueLength);
         }
-        if (position === valueLength) {
+        if (position > 0 && position === valueLength) {
           // update data attribute for the last element
           itemContainer = itemContainers[position-1];
           formComplex = Polymer.dom(itemContainer).querySelector('at-form-complex');
