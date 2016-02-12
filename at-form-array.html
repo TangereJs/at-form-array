@@ -1,88 +1,63 @@
-<link rel="import" href="../layout/layout.html">
+<link rel="import" href="../at-theme/at-theme.html">
 <link rel="import" href="../at-core-form/schema-helpers-import.html">
 <link rel="import" href="../at-rule-engine/at-rule-engine.html">
 <link rel="import" href="../at-form-complex/at-form-complex.html">
 
 <dom-module id="at-form-array">
-  <style>
-    .item-action-hidden {
-      display: none;
-    }
-
-    .hidden-div {
-      display: none;
-    }
-
-    .hidden {
-      display: none;
-    }
-
-    .field.vertical.layout.hidden {
-      display: none;
-    }
-
-    #headerWrapper.hide-header {
-      display: none;
-    }
-
-    .field-wrapper {
-      margin: 2px;
-      padding: 2px;
-    }
-
-    .action-button {
-      margin: 2px;
-      padding: 2px;
-    }
-
-    .headerText {
-      font-weight: bold;
-      margin: 0 2px;
-      padding: 0 2px;
-    }
-
-    .label-content {}
-
-    .item-container > .item-actions-container {
-      width: 110px;
-    }
-
-    #headerWrapper > .header-padding {
-      width: 110px;
-    }
-
-    --error-color: #e41e2b;
-    .label-container.error {
-      color: var(--error-color);
-    }
-
-    .error-container.error {
-      color: var(--error-color);
-    }
-  </style>
   <template>
-    <at-core-theme></at-core-theme>
-    <div class="field vertical layout">
-      <div id="labelContainer" class="label-container">
-        <h4 class="label-content">{{label}}</h4>
-      </div>
-      <div id="schemaAssigned" class="hidden-div">
-        <div id="headerWrapper" class="horizontal layout">
-          <div id="headerContainer" class="horizontal layout center flex">
+    <style include="at-form-common"></style>
+    <style>
+      :host * {
+        box-sizing: border-box;
+      }
+
+      :host {
+        @apply(--at-form-host);
+      }
+
+      .header-warpper-inner {
+        @apply(--layout-horizontal);
+      }
+
+      #headerWrapper .header-padding {
+        width: 110px;
+      }
+
+      .header-text {
+        font-weight: bold;
+        margin: 0 2px;
+        padding: 0 2px;
+      }
+
+      .action-button {
+        margin: 2px;
+        padding: 2px;
+      }
+
+      .item-container .item-actions-container {
+        width: 110px;
+      }
+
+    </style>
+    <div id="atContainer" class="at-container">
+      <label id="label">{{label}}</label>
+      <div class="contentContainer" class="at-content-container">
+        <div id="schemaAssigned" class="hidden">
+          <div id="headerWrapper">
+            <div class="header-warpper-inner">
+              <div id="headerContainer" class="horizontal layout center flex">
+              </div>
+              <div id="headerPadding" class="header-padding"></div>
+            </div>
           </div>
-          <div id="headerPadding" class="header-padding"></div>
+          <div id="itemsContainer" class="items-container vertical layout"></div>
+          <div>
+            <button id="addItemBtn" type="button">Add item</button>
+          </div>
         </div>
-        <div id="itemsContainer" class="items-container vertical layout"></div>
-        <div>
-          <button id="addItemBtn" type="button">Add item</button>
-        </div>
+        <div id="schemaNotAssigned">Schema not assigned.</div>
       </div>
-      <div id="schemaNotAssigned">
-        <p>Schema not assigned.</p>
-      </div>
-      <div id="errorContainer" class="error-container">
-        <p id="errorMessage" class="error-message"></p>
-      </div>
+      <div id="hint"></div>
     </div>
   </template>
   <script>
@@ -162,7 +137,6 @@
         type: 'array',
         title: 'Array'
       }],
-      _scopeCssViaAttr: true,
       // ------------------------------------------------------------
       // unsupported types
       // list type or xtype of the element that should not be supported by at-form-array
@@ -170,8 +144,8 @@
       _unsupported_types: ["object", "array"],
       set valid(newValue) {},
       hideChanged: function(newValue, oldValue) {
-        var wrapper = Polymer.dom(this.root).querySelector('.field');
-        this.toggleClass('hidden', newValue, wrapper);
+        var container = this.$.atContainer;
+        this.toggleClass('hidden', newValue, container);
         if (this._isReady) {
           this.validate();
         }
@@ -182,15 +156,13 @@
           event.stopPropagation();
           self._addNewItem();
         });
-        this.toggleClass('hide-header', this.layout === 'vertical', this.$.headerWrapper);
+        this.toggleClass('hidden', this.layout === 'vertical', this.$.headerWrapper);
         this._isReady = true;
       },
       disabledChanged: function(newValue, oldValue) {
-        /* ij - to easily and quickly select all elements that need to be disabled
-          each at-form-* element is assigned data-tagname attribute with value of elements tag name
-          ie. at-form-input element would have data-tagname="at-form-input" set
-          now all at-form-* elements can be selected with [data-tagname^="at-form-"] selector
-        */
+        var atContainer = this.$.atContainer;
+        this.toggleClass('disabled', newValue, atContainer);
+
         var afNodeList = Polymer.dom(this.root).querySelectorAll('at-form-complex');
         var i, node;
         var buttons = Polymer.dom(this.root).querySelectorAll('button');
@@ -245,16 +217,16 @@
         }
 
         // update valid UI
-        var labelContainer = this.$.labelContainer;
-        this.toggleClass('error', !valid, labelContainer);
-        var errorContainer = this.$.errorContainer;
-        this.toggleClass('error', !valid, errorContainer);
+        var label = this.$.label;
+        this.toggleClass('error', !valid, label);
+        var hint = this.$.hint;
+        this.toggleClass('error', !valid, hint);
 
-        var errorMessageHtml = this.$.errorMessage;
+        var hint = this.$.hint;
         if (!valid) {
-          Polymer.dom(errorMessageHtml).innerHTML = 'At least one item is required';
+          Polymer.dom(hint).innerHTML = 'At least one item is required';
         } else {
-          Polymer.dom(errorMessageHtml).innerHTML = '';
+          Polymer.dom(hint).innerHTML = '';
         }
 
         this._setValid(valid);
@@ -268,17 +240,16 @@
         addItemBtn.focus();
       },
       hideLabelChanged: function(newValue, oldValue) {
-        this.toggleClass("hidden", newValue, this.$.labelContainer);
+        this.toggleClass("hidden", newValue, this.$.label);
       },
       layoutChanged: function(newValue, oldValue) {
-        var itemsContainer, itemContainers, items, fieldWrappers, self = this;
+        var itemsContainer, itemContainers, items, self = this;
 
-        this.toggleClass('hide-header', newValue === 'vertical', this.$.headerWrapper);
+        this.toggleClass('hidden', newValue === 'vertical', this.$.headerWrapper);
 
         itemsContainer = Polymer.dom(this.$.itemsContainer);
         itemContainers = itemsContainer.querySelectorAll('.item-container');
         items = itemsContainer.querySelectorAll('.item');
-        fieldWrappers = itemsContainer.querySelectorAll('.field-wrapper');
         var itemActionsContainers = Polymer.dom(itemsContainer).querySelectorAll('.item-actions-container');
 
         if (newValue === 'horizontal') {
@@ -291,9 +262,6 @@
             self.toggleClass('vertical', false, item);
             item.layout = 'horizontal';
             item.hideLabelsForElements();
-          });
-          fieldWrappers.forEach(function(wrapper) {
-            Polymer.dom(wrapper).firstChild.hideLabel = true;
           });
           itemActionsContainers.forEach(function(itemActionsContainer, index) {
             itemActionsContainer.style['align-self'] = 'center';
@@ -308,9 +276,6 @@
             self.toggleClass('vertical', true, item);
             item.layout = 'vertical';
             item.showLabelsForElements();
-          });
-          fieldWrappers.forEach(function(wrapper) {
-            Polymer.dom(wrapper).firstChild.hideLabel = false;
           });
           itemActionsContainers.forEach(function(itemActionsContainer, index) {
             itemActionsContainer.style['align-self'] = 'flex-start';
@@ -352,8 +317,8 @@
         var properties = this._getSchemaProperties(newValue);
 
         if (properties) {
-          Polymer.dom(this.$.schemaNotAssigned).classList.add('hidden-div');
-          Polymer.dom(this.$.schemaAssigned).classList.remove('hidden-div');
+          Polymer.dom(this.$.schemaNotAssigned).classList.add('hidden');
+          Polymer.dom(this.$.schemaAssigned).classList.remove('hidden');
 
           this._updateHeader();
         }
@@ -361,7 +326,7 @@
       _addNewItem: function() {
         var newEntry = this._createNewItemValueEntry(this.schema.items.properties);
         this.value.push(newEntry);
-        var position = this.value.length-1;
+        var position = this.value.length - 1;
 
         var newItemHtml = this._createNewItemContainerHtml(newEntry, position);
         Polymer.dom(this.$.itemsContainer).appendChild(newItemHtml);
@@ -373,7 +338,7 @@
 
         // update buttons for previous element
         var itemContainer = Polymer.dom(newItemHtml).previousSibling;
-        this._updateItemActionButtons(itemContainer, position-1, position+1);
+        this._updateItemActionButtons(itemContainer, position - 1, position + 1);
 
         this._fireValueChangedEvent();
       },
@@ -401,13 +366,13 @@
         }
         if (position > 0 && position === valueLength) {
           // update data attribute for the last element
-          itemContainer = itemContainers[position-1];
+          itemContainer = itemContainers[position - 1];
           formComplex = Polymer.dom(itemContainer).querySelector('at-form-complex');
           if (formComplex) {
-            Polymer.dom(formComplex).setAttribute('data-position', position-1);
+            Polymer.dom(formComplex).setAttribute('data-position', position - 1);
           }
           // update buttons for last element
-          this._updateItemActionButtons(itemContainer, position-1, valueLength-1);
+          this._updateItemActionButtons(itemContainer, position - 1, valueLength - 1);
         }
 
         this._fireValueChangedEvent();
@@ -516,7 +481,7 @@
             Polymer.dom(self.$.headerContainer).appendChild(headerItem);
 
             spanText = document.createElement('span');
-            Polymer.dom(spanText).classList.add('headerText');
+            Polymer.dom(spanText).classList.add('header-text');
             Polymer.dom(spanText).innerHTML = headerText;
             Polymer.dom(headerItem).appendChild(spanText);
           });
@@ -584,7 +549,7 @@
         Polymer.dom(moveUpBtn).setAttribute('type', 'button');
         Polymer.dom(moveUpBtn).classList.add('action-button');
         if (position === 0) {
-          Polymer.dom(moveUpBtn).classList.add('item-action-hidden');
+          Polymer.dom(moveUpBtn).classList.add('hidden');
         }
         Polymer.dom(moveUpBtn).setAttribute('data-action-type', 'moveup');
         Polymer.dom(moveUpBtn).setAttribute('data-position', position);
@@ -606,7 +571,7 @@
         Polymer.dom(moveDownBtn).setAttribute('type', 'button');
         Polymer.dom(moveDownBtn).classList.add('action-button');
         if (position === this.value.length - 1) {
-          moveDownBtn.classList.add('item-action-hidden');
+          moveDownBtn.classList.add('hidden');
         }
         Polymer.dom(moveDownBtn).setAttribute('data-action-type', 'movedown');
         Polymer.dom(moveDownBtn).setAttribute('data-position', position);
@@ -690,7 +655,7 @@
         // existingItemHtml.valueChanged(item, prevValue);
         Polymer.dom(existingItemHtml).setAttribute('data-position', position);
       },
-      _updateItemActionButtons: function (existingItemHtml, position, maxItems) {
+      _updateItemActionButtons: function(existingItemHtml, position, maxItems) {
         var actionButotns;
         var actionButtonsIndex;
         var actionButton;
@@ -706,17 +671,17 @@
         moveUpBtn = Polymer.dom(existingItemHtml).querySelector('[data-action-type="moveup"]');
         moveDownBtn = Polymer.dom(existingItemHtml).querySelector('[data-action-type="movedown"]');
         if (position === 0) {
-          Polymer.dom(moveUpBtn).classList.add('item-action-hidden');
+          Polymer.dom(moveUpBtn).classList.add('hidden');
           if (maxItems > 1) {
-            Polymer.dom(moveDownBtn).classList.remove('item-action-hidden');
+            Polymer.dom(moveDownBtn).classList.remove('hidden');
           }
         }
         if (position > 0 && position < maxItems - 1) {
-          Polymer.dom(moveUpBtn).classList.remove('item-action-hidden');
-          Polymer.dom(moveDownBtn).classList.remove('item-action-hidden');
+          Polymer.dom(moveUpBtn).classList.remove('hidden');
+          Polymer.dom(moveDownBtn).classList.remove('hidden');
         }
         if (position === maxItems) {
-          Polymer.dom(moveDownBtn).classList.add('item-action-hidden');
+          Polymer.dom(moveDownBtn).classList.add('hidden');
         }
       },
       _createNewItemValueEntry: function(properties) {

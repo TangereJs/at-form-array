@@ -3,12 +3,10 @@
   "private": true,
   "dependencies": {
     "layout": "Polymer/layout#0.8-preview",
-    "at-core-theme": "TangereJs/at-core-theme#0.8-preview",
-    "at-form-text": "TangereJs/at-form-text#0.8-preview",
-    "at-form-number": "TangereJs/at-form-number#0.8-preview",
-    "at-form-lookup": "TangereJs/at-form-lookup#0.8-preview",
-    "at-form-checkbox": "TangereJs/at-form-checkbox#0.8-preview",
+    "at-theme": "TangereJs/at-theme#0.8-preview",
+    "at-core-form": "TangereJs/at-core-form#0.8-preview",
+    "at-form-complex": "TangereJs/at-form-complex#0.8-preview",
     "at-rule-engine": "TangereJs/at-rule-engine#0.8-preview"
   },
-  "version": "0.0.1.1"
+  "version": "0.0.1.2"
 }
