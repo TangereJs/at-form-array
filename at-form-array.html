@@ -328,11 +328,11 @@
 
         if (properties) {
           this._updateItemsContainerHtml();
+          this.validate();
         } else {
           console.log('Can not update value when schema is not assigned');
           return;
         }
-        this.validate();
       },
       schemaChanged: function(newValue, oldValue) {
         if (Object.prototype.toString.call(newValue) === "[object String]") {
@@ -595,6 +595,7 @@
         var assignValue = {};
         this._cloneObject(Object.keys(item), item, assignValue);
         resultHtml.value = assignValue;
+        resultHtml.clearUIValidState();
         Polymer.dom(resultHtml).setAttribute('data-position', position);
         Polymer.dom(resultHtml).classList.add('item');
         Polymer.dom(resultHtml).classList.add(self.layout);
