@@ -34,6 +34,7 @@
       <div class="horizontal layout">
         <at-form-checkbox id="disableArray" label="Disable at-form-array"></at-form-checkbox>
         <at-form-checkbox id="validArray" label="Is valid?" disabled></at-form-checkbox>
+        &nbsp;|&nbsp;<a onclick="validate()">validate array</a>
       </div>
       <at-form-array label="Random people" id="atFormArray" layout="horizontal"></at-form-array>
     </div>
@@ -190,6 +191,12 @@
         validArray.value = atFormArray.valid;
       });
     });
+    
+    function validate() {
+      var vr = atFormArray.validate();
+      alert("array is valid: " + vr);
+      return false;
+    }
   </script>
 </body>
 
