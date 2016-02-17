@@ -26,7 +26,7 @@
       .header-text {
         font-weight: bold;
         margin: 0 2px;
-        padding: 0 2px;
+        padding: 0 15px;
       }
 
       .action-button {
@@ -105,7 +105,8 @@
                 properties: {
                   value: {
                     type: "string",
-                    title: "Value"
+                    title: "Value",
+                    xgridcols: 12
                   }
                 }
               }
@@ -260,12 +261,12 @@
           items.forEach(function(item) {
             self.toggleClass('horizontal', true, item);
             self.toggleClass('vertical', false, item);
-            item.layout = 'horizontal';
+            item._layout = 'horizontal';
             item.hideLabelsForElements();
           });
-          itemActionsContainers.forEach(function(itemActionsContainer, index) {
-            itemActionsContainer.style['align-self'] = 'center';
-          });
+          // itemActionsContainers.forEach(function(itemActionsContainer, index) {
+            // itemActionsContainer.style['align-self'] = 'center';
+          // });
         } else if (newValue === 'vertical') {
           itemContainers.forEach(function(itemContainer) {
             self.toggleClass('horizontal', false, itemContainer);
@@ -274,12 +275,12 @@
           items.forEach(function(item) {
             self.toggleClass('horizontal', false, item);
             self.toggleClass('vertical', true, item);
-            item.layout = 'vertical';
+            item._layout = 'vertical';
             item.showLabelsForElements();
           });
-          itemActionsContainers.forEach(function(itemActionsContainer, index) {
-            itemActionsContainer.style['align-self'] = 'flex-start';
-          });
+          // itemActionsContainers.forEach(function(itemActionsContainer, index) {
+            // itemActionsContainer.style['align-self'] = 'flex-start';
+          // });
         } else {
           console.log('Layout value + ' + newValue + ' is unsupported. Supported values are horizontal and vertical.');
           console.log('at-form-array layout not changed.');
@@ -338,7 +339,9 @@
 
         // update buttons for previous element
         var itemContainer = Polymer.dom(newItemHtml).previousSibling;
-        this._updateItemActionButtons(itemContainer, position - 1, position + 1);
+        if (itemContainer) {
+          this._updateItemActionButtons(itemContainer, position-1, position + 1);
+        }
 
         this._fireValueChangedEvent();
       },
@@ -372,7 +375,7 @@
             Polymer.dom(formComplex).setAttribute('data-position', position - 1);
           }
           // update buttons for last element
-          this._updateItemActionButtons(itemContainer, position - 1, valueLength - 1);
+          this._updateItemActionButtons(itemContainer, position-1, valueLength);
         }
 
         this._fireValueChangedEvent();
@@ -610,7 +613,7 @@
       _createItemHtmlFromSchema: function(properties, item, position) {
         var self = this;
         var resultHtml = document.createElement('at-form-complex');
-        resultHtml.layout = self.layout;
+        resultHtml._layout = self.layout;
         var rules = [];
         if (self.schema.rules) {
           rules = this.schema.rules;
@@ -628,7 +631,7 @@
         Polymer.dom(resultHtml).classList.add(self.layout);
         Polymer.dom(resultHtml).classList.add('layout');
         Polymer.dom(resultHtml).classList.add('flex');
-        resultHtml.layout = self.layout;
+        resultHtml._layout = self.layout;
 
         resultHtml.addEventListener('value-changed', function(event) {
           var _resultHtml = resultHtml;
@@ -680,8 +683,11 @@
           Polymer.dom(moveUpBtn).classList.remove('hidden');
           Polymer.dom(moveDownBtn).classList.remove('hidden');
         }
-        if (position === maxItems) {
+        if (position === maxItems-1) {
           Polymer.dom(moveDownBtn).classList.add('hidden');
+          if (maxItems === 2) {
+            Polymer.dom(moveUpBtn).classList.remove('hidden');
+          }
         }
       },
       _createNewItemValueEntry: function(properties) {
