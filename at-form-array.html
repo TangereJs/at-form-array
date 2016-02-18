@@ -147,9 +147,7 @@
       hideChanged: function(newValue, oldValue) {
         var container = this.$.atContainer;
         this.toggleClass('hidden', newValue, container);
-        if (this._isReady) {
-          this.validate();
-        }
+        this._updateValidState();
       },
       ready: function() {
         var self = this;
@@ -191,22 +189,34 @@
             button.removeAttribute('disabled');
           }
         }
-        if (this._isReady) {
-          this.validate();
-        }
+        this._updateValidState();
       },
       requiredChanged: function(newValue, oldValue) {
-        if (this._isReady) {
-          this.validate();
-        }
+        this._updateValidState();
       },
-      validate: function() {
+      _updateValidState: function() {
         if (!this._isReady) {
           return;
         }
+
         var valid = this.hide || this.disabled;
         if (!valid) {
           valid = !this.required || (this.required && this.value.length > 0);
+        }
+
+        // update valid UI
+        var label = this.$.label;
+        this.toggleClass('error', !valid, label);
+        var hint = this.$.hint;
+        this.toggleClass('error', !valid, hint);
+
+        var hint = this.$.hint;
+        if (hint) {
+          if (!valid) {
+            Polymer.dom(hint).innerHTML = 'At least one item is required';
+          } else {
+            Polymer.dom(hint).innerHTML = '';
+          }
         }
 
         var formComplexElements = this.getElementsByTagName('at-form-complex');
@@ -217,6 +227,18 @@
           valid = valid && complexValid;
         }
 
+        this._setValid(valid);
+      },
+      validate: function () {
+        if (!this._isReady) {
+          return;
+        }
+
+        var valid = this.hide || this.disabled;
+        if (!valid) {
+          valid = !this.required || (this.required && this.value.length > 0);
+        }
+
         // update valid UI
         var label = this.$.label;
         this.toggleClass('error', !valid, label);
@@ -224,13 +246,25 @@
         this.toggleClass('error', !valid, hint);
 
         var hint = this.$.hint;
-        if (!valid) {
-          Polymer.dom(hint).innerHTML = 'At least one item is required';
-        } else {
-          Polymer.dom(hint).innerHTML = '';
+        if (hint) {
+          if (!valid) {
+            Polymer.dom(hint).innerHTML = 'At least one item is required';
+          } else {
+            Polymer.dom(hint).innerHTML = '';
+          }
+        }
+
+        var formComplexElements = this.getElementsByTagName('at-form-complex');
+        var fceLen = formComplexElements.length;
+        for (var i = 0; i < fceLen; i++) {
+          var formComplex = formComplexElements[i];
+          var complexValid = formComplex.validate();
+          valid = valid && complexValid;
         }
 
         this._setValid(valid);
+
+        return valid;
       },
       /// QUICK FIX remove when at-form-array gets validation behavior
       clearUIValidState: function() {
@@ -294,7 +328,7 @@
 
         if (properties) {
           this._updateItemsContainerHtml();
-          this.validate();
+          this._updateValidState();
         } else {
           console.log('Can not update value when schema is not assigned');
           return;
@@ -738,7 +772,6 @@
       },
       _updateValue: function(position, value) {
         this.value[position] = value;
-        this.validate();
         this._fireValueChangedEvent();
       },
       _cloneArrayValue: function(originalArray) {
@@ -764,9 +797,8 @@
         this._fireValueChangedEvent();
       },
       _fireValueChangedEvent: function() {
-        if (this._isReady) {
-          this.validate();
-        }
+        this._updateValidState();
+
         this.fire('value-changed', {
           value: this.value
         });
