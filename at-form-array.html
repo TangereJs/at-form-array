@@ -820,22 +820,8 @@
         if (schema.items && schema.items.properties) {
           result = schema.items.properties;
         }
-        var propClone = JSON.stringify(result);
-        propClone = JSON.parse(propClone);
 
-        var propNames = Object.keys(propClone);
-        var length = propNames.length;
-        if (length > 0) {
-          var xgridcolsValue = Math.floor(12/length);
-          if (xgridcolsValue === 0) {
-            xgridcolsValue = 1;
-          }
-          propNames.forEach(function (propName, index) {
-            propClone[propName].xgridcols = xgridcolsValue;
-          });
-        }
-
-        return propClone;
+        return result;
       },
       _isString: function(obj) {
         return Object.prototype.toString.call(obj) === "[object String]";
