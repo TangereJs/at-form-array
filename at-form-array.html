@@ -105,8 +105,7 @@
                 properties: {
                   value: {
                     type: "string",
-                    title: "Value",
-                    xgridcols: 12
+                    title: "Value"
                   }
                 }
               }
@@ -821,8 +820,22 @@
         if (schema.items && schema.items.properties) {
           result = schema.items.properties;
         }
+        var propClone = JSON.stringify(result);
+        propClone = JSON.parse(propClone);
 
-        return result;
+        var propNames = Object.keys(propClone);
+        var length = propNames.length;
+        if (length > 0) {
+          var xgridcolsValue = Math.floor(12/length);
+          if (xgridcolsValue === 0) {
+            xgridcolsValue = 1;
+          }
+          propNames.forEach(function (propName, index) {
+            propClone[propName].xgridcols = xgridcolsValue;
+          });
+        }
+
+        return propClone;
       },
       _isString: function(obj) {
         return Object.prototype.toString.call(obj) === "[object String]";
