@@ -693,7 +693,7 @@
       _updateItemHtml: function(existingItemHtml, item, position) {
         var prevValue = existingItemHtml.value;
         existingItemHtml.value = item;
-        // existingItemHtml.valueChanged(item, prevValue);
+        existingItemHtml.valueChanged(item, prevValue);
         Polymer.dom(existingItemHtml).setAttribute('data-position', position);
       },
       _updateItemActionButtons: function(existingItemHtml, position, maxItems) {
