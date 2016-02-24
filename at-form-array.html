@@ -41,7 +41,6 @@
         min-height: 14px;
         margin-bottom: 8px;
       }
-
     </style>
     <div id="atContainer" class="at-container">
       <label id="label">{{label}}</label>
@@ -104,7 +103,8 @@
           value: function() {
             return [];
           },
-          observer: 'valueChanged'
+          observer: 'valueChanged',
+          xtype: "json"
         },
         schema: {
           type: Object,
@@ -219,7 +219,7 @@
 
         this._setValid(valid);
       },
-      _validateSelf: function () {
+      _validateSelf: function() {
         var valid = this.hide || this.disabled;
         var isExternalValid = this.errorMessage == null || this.errorMessage === "";
         if (!valid) {
@@ -248,7 +248,7 @@
         this.toggleClass('error', !valid, hint);
         return valid;
       },
-      validate: function () {
+      validate: function() {
         if (!this._isReady) {
           return;
         }
@@ -271,7 +271,7 @@
       clearUIValidState: function() {
 
       },
-      errorMessageChanged: function (newValue, oldValue) {
+      errorMessageChanged: function(newValue, oldValue) {
         this._updateValidState();
       },
       focus: function() {
@@ -303,7 +303,7 @@
             item.hideLabelsForElements();
           });
           // itemActionsContainers.forEach(function(itemActionsContainer, index) {
-            // itemActionsContainer.style['align-self'] = 'center';
+          // itemActionsContainer.style['align-self'] = 'center';
           // });
         } else if (newValue === 'vertical') {
           itemContainers.forEach(function(itemContainer) {
@@ -317,7 +317,7 @@
             item.showLabelsForElements();
           });
           // itemActionsContainers.forEach(function(itemActionsContainer, index) {
-            // itemActionsContainer.style['align-self'] = 'flex-start';
+          // itemActionsContainer.style['align-self'] = 'flex-start';
           // });
         } else {
           console.log('Layout value + ' + newValue + ' is unsupported. Supported values are horizontal and vertical.');
@@ -328,6 +328,17 @@
         if (!this.schema) {
           return;
         }
+
+        if (schemaHelpers.isString(newValue)) {
+          try {
+            var objValue = JSON.parse(newValue);
+            this.value = objValue;
+            return;
+          } catch (e) {
+            console.log(e);
+          }
+        }
+
         var properties = this._getSchemaProperties(this.schema);
 
         if (properties) {
@@ -378,7 +389,7 @@
         // update buttons for previous element
         var itemContainer = Polymer.dom(newItemHtml).previousSibling;
         if (itemContainer) {
-          this._updateItemActionButtons(itemContainer, position-1, position + 1);
+          this._updateItemActionButtons(itemContainer, position - 1, position + 1);
         }
 
         this._fireValueChangedEvent();
@@ -413,7 +424,7 @@
             Polymer.dom(formComplex).setAttribute('data-position', position - 1);
           }
           // update buttons for last element
-          this._updateItemActionButtons(itemContainer, position-1, valueLength);
+          this._updateItemActionButtons(itemContainer, position - 1, valueLength);
         }
 
         this._fireValueChangedEvent();
@@ -721,7 +732,7 @@
           Polymer.dom(moveUpBtn).classList.remove('hidden');
           Polymer.dom(moveDownBtn).classList.remove('hidden');
         }
-        if (position === maxItems-1) {
+        if (position === maxItems - 1) {
           Polymer.dom(moveDownBtn).classList.add('hidden');
           if (maxItems === 2) {
             Polymer.dom(moveUpBtn).classList.remove('hidden');
