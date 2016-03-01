@@ -1,7 +1,9 @@
+<link rel="import" href="../tangere/Tangere.html">
 <link rel="import" href="../at-theme/at-theme.html">
 <link rel="import" href="../at-core-form/schema-helpers-import.html">
 <link rel="import" href="../at-rule-engine/at-rule-engine.html">
 <link rel="import" href="../at-form-complex/at-form-complex.html">
+<link rel="import" href="../at-i18n/at-i18n-behavior.html">
 
 <dom-module id="at-form-array">
   <template>
@@ -67,6 +69,7 @@
     'use strict';
     Polymer({
       is: 'at-form-array',
+      behaviors: [ Tangere.behaviors.i18n ],
       properties: {
         label: {
           type: String,
@@ -235,7 +238,7 @@
           } else if (!isExternalValid) {
             Polymer.dom(hint).innerHTML = this.errorMessage;
           } else if (!valid) {
-            Polymer.dom(hint).innerHTML = 'At least one item is required';
+            Polymer.dom(hint).innerHTML = this.T('This field is required.');
           } else {
             Polymer.dom(hint).innerHTML = '';
           }
