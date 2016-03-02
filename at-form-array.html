@@ -4,6 +4,7 @@
 <link rel="import" href="../at-rule-engine/at-rule-engine.html">
 <link rel="import" href="../at-form-complex/at-form-complex.html">
 <link rel="import" href="../at-i18n/at-i18n-behavior.html">
+<link rel="import" href="../at-carbon-icon-button/at-carbon-icon-button.html">
 
 <dom-module id="at-form-array">
   <template>
@@ -31,6 +32,8 @@
       }
 
       .action-button {
+        width: 32px;
+        height: 32px;
         margin: 2px;
         padding: 2px;
       }
@@ -57,7 +60,7 @@
           </div>
           <div id="itemsContainer" class="items-container vertical layout"></div>
           <div>
-            <button id="addItemBtn" type="button">Add item</button>
+            <at-carbon-icon-button id="addItemBtn" icon="now:plus"></at-carbon-icon-button>
           </div>
         </div>
         <div id="schemaNotAssigned">Schema not assigned.</div>
@@ -600,65 +603,56 @@
         // ------------------------------
         // create move up button
         // ------------------------------
-        var moveUpBtn = document.createElement('button');
-        Polymer.dom(moveUpBtn).setAttribute('type', 'button');
+        var moveUpBtn = document.createElement('at-carbon-icon-button');
+        moveUpBtn.icon = "now:arrow-up";
+        moveUpBtn.title = 'Move Up';
         Polymer.dom(moveUpBtn).classList.add('action-button');
         if (position === 0) {
           Polymer.dom(moveUpBtn).classList.add('hidden');
         }
         Polymer.dom(moveUpBtn).setAttribute('data-action-type', 'moveup');
         Polymer.dom(moveUpBtn).setAttribute('data-position', position);
-        Polymer.dom(moveUpBtn).setAttribute('title', 'Move Up');
         moveUpBtn.addEventListener('click', function(event) {
           event.stopPropagation();
           var position = self._getPosition(event.currentTarget);
           self._moveItemUp(position);
         });
         Polymer.dom(itemActionsDiv).appendChild(moveUpBtn);
-        var moveUpIcon = document.createElement('at-carbon-icon');
-        moveUpIcon.icon = "now:arrow-up";
-        Polymer.dom(moveUpBtn).appendChild(moveUpIcon);
 
         // ------------------------------
         // create move down button
         // ------------------------------
-        var moveDownBtn = document.createElement('button');
-        Polymer.dom(moveDownBtn).setAttribute('type', 'button');
+        var moveDownBtn = document.createElement('at-carbon-icon-button');
+        moveDownBtn.icon = 'now:arrow-down';
+        moveDownBtn.title = 'Move Down';
         Polymer.dom(moveDownBtn).classList.add('action-button');
         if (position === this.value.length - 1) {
           moveDownBtn.classList.add('hidden');
         }
         Polymer.dom(moveDownBtn).setAttribute('data-action-type', 'movedown');
         Polymer.dom(moveDownBtn).setAttribute('data-position', position);
-        Polymer.dom(moveDownBtn).setAttribute('title', 'Move Down');
         moveDownBtn.addEventListener('click', function(event) {
           event.stopPropagation();
           var position = self._getPosition(event.currentTarget);
           self._moveItemDown(position);
         });
         Polymer.dom(itemActionsDiv).appendChild(moveDownBtn);
-        var moveDownIcon = document.createElement('at-carbon-icon');
-        moveDownIcon.icon = 'now:arrow-down';
-        Polymer.dom(moveDownBtn).appendChild(moveDownIcon);
 
         // ------------------------------
         // create remove button
         // ------------------------------
-        var removeBtn = document.createElement('button');
-        Polymer.dom(removeBtn).setAttribute('type', 'button');
+        var removeBtn = document.createElement('at-carbon-icon-button');
+        removeBtn.icon = "now:delete";
+        removeBtn.title = 'Remove';
         Polymer.dom(removeBtn).classList.add('action-button');
         Polymer.dom(removeBtn).setAttribute('data-action-type', 'remove');
         Polymer.dom(removeBtn).setAttribute('data-position', position);
-        Polymer.dom(removeBtn).setAttribute('title', 'Remove');
         removeBtn.addEventListener('click', function(event) {
           event.stopPropagation();
           var position = self._getPosition(event.currentTarget);
           self._removeItem(position);
         });
         Polymer.dom(itemActionsDiv).appendChild(removeBtn);
-        var removeIcon = document.createElement('at-carbon-icon');
-        removeIcon.icon = "now:delete";
-        Polymer.dom(removeBtn).appendChild(removeIcon);
 
         return itemDiv;
       },
