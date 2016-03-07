@@ -76,22 +76,25 @@
       properties: {
         label: {
           type: String,
-          value: ''
+          value: '',
+          title: 'Title'
         },
         hideLabel: {
           type: Boolean,
           value: false,
-          observer: 'hideLabelChanged'
+          observer: 'hideLabelChanged',
         },
         disabled: {
           type: Boolean,
           value: false,
-          observer: 'disabledChanged'
+          observer: 'disabledChanged',
+          title: 'Field value can not be changed'
         },
         required: {
           type: Boolean,
           value: false,
-          observer: 'requiredChanged'
+          observer: 'requiredChanged',
+          title: 'Input requred'
         },
         valid: {
           type: Boolean,
@@ -102,7 +105,8 @@
         errorMessage: {
           type: String,
           value: '',
-          observer: 'errorMessageChanged'
+          observer: 'errorMessageChanged',
+          title: 'Error message'
         },
         value: {
           type: Array,
@@ -110,7 +114,8 @@
             return [];
           },
           observer: 'valueChanged',
-          xtype: "json"
+          xtype: "json",
+          title: 'Value'
         },
         schema: {
           type: Object,
@@ -145,7 +150,8 @@
         hide: {
           type: Boolean,
           value: false,
-          observer: 'hideChanged'
+          observer: 'hideChanged',
+          title: 'Filed is  invisible'
         }
       },
       $meta: [{
