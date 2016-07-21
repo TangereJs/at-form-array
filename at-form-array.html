@@ -399,23 +399,23 @@
       },
 
       _schemaChanged: function(newValue, oldValue) {
-        if (Object.prototype.toString.call(newValue) === "[object String]") {
+        if (this._isString(newValue)) {
           try {
             newValue = JSON.parse(newValue);
             this.schema = newValue;
-            return;
           } catch (e) {
             console.log(e);
           }
+          return;
         }
 
-        if (!newValue) {
+        if (!schemaHelpers.isObject(newValue)) {
           return;
         }
 
         var properties = this._getSchemaProperties(newValue);
 
-        if (properties) {
+        if (!schemaHelpers.isObject(properties)) {
           Polymer.dom(this.$.schemaNotAssigned).classList.add('hidden');
           Polymer.dom(this.$.schemaAssigned).classList.remove('hidden');
 
@@ -424,7 +424,7 @@
       },
 
       _valueChanged: function(newValue, oldValue) {
-        if (!this.schema) {
+        if (schemaHelpers.areEqual(newValue, oldValue)) {
           return;
         }
 
@@ -432,11 +432,16 @@
           try {
             var objValue = JSON.parse(newValue);
             this.value = objValue;
-            return;
           } catch (e) {
             console.log(e);
           }
+          return;
         }
+
+        if (!this.schema) {
+          return;
+        }
+
 
         var properties = this._getSchemaProperties(this.schema);
 
@@ -779,9 +784,11 @@
           var value = event.detail.value;
           // this is here to filter value-changed event from at-form-complex individual elements
           // for unknown reasons we get value-changed twice here, once for at-form-complex.value-changed and another one for at-form-complex.individualElement.value-changed
-          if (event.srcElement.is === "at-form-complex") {
-            self._updateValue(position, value);
-          }
+          console.log(event.srcElement.is);
+            // if (event.srcElement.is === "at-form-complex") {
+            // debugger;
+          self._updateValue(position, value);
+          // }
         });
 
         return resultHtml;
@@ -884,6 +891,10 @@
       },
 
       _updateValue: function(position, value) {
+        var previousValue = this.value[position];
+        if (schemaHelpers.areEqual(previousValue, value)) {
+          return;
+        }
         this.value[position] = value;
         this._fire_valueChangedEvent();
       },
@@ -912,7 +923,7 @@
         this.splice('value', position, 1);
         this._fire_valueChangedEvent();
       },
-      
+
       _fire_valueChangedEvent: function() {
         this._updateUIValidState();
 
@@ -920,26 +931,30 @@
           value: this.value
         });
       },
+
       // *ij* since array.schema can be either { items: { properties: {} } } or { schema: { items: { properties: {} } }, rules: [] }
       // this helper function gets the propertis for both cases
-      // if schema is string its converted to object
-      // if an error occurs an undefined is returned as result
+      // if an error occurs false is returned as result
       _getSchemaProperties: function(schema) {
-        var result = undefined;
-        if (this._isString(schema)) {
-          try {
-            schema = JSON.parse(schema);
-          } catch (e) {
-            console.log(e);
-            return result;
-          }
+        var sh = window.schemaHelpers;
+        var letSchema;
+
+        if (!sh.isObject(schema)) {
+          return false;
+        }
+        // assume that schema is { items: { properties: {} } }
+        letSchema = schema;
+        // if schema is { schema: { items: { properties: {} } }, rules: [] }
+        if (sh.isObject(schema.schema)) {
+          // use schema.schema
+          letSchema = schema.schema;
         }
 
-        if (schema.items && schema.items.properties) {
-          result = schema.items.properties;
+        if (!sh.isObject(letSchema.items) || !sh.isObject(letSchema.items.properties)) {
+          return false;
         }
 
-        return result;
+        return letSchema.items.properties;
       },
       _isString: function(obj) {
         return Object.prototype.toString.call(obj) === "[object String]";
