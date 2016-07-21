@@ -75,51 +75,99 @@
       is: 'at-form-array',
       behaviors: [ Tangere.behaviors.i18n ],
       properties: {
+        /**
+         * Textual label for the element
+         * @property label
+         * @type String
+         * @default ''
+         */
         label: {
           type: String,
           value: '',
           title: 'Title'
         },
+        /**
+         * When true hides the label for the element
+         * @property hideLabel
+         * @type Boolean
+         * @default false
+         */
         hideLabel: {
           type: Boolean,
           value: false,
-          observer: 'hideLabelChanged',
+          observer: '_hideLabelChanged',
           title: 'Do not show the label'
         },
+        /**
+         * When true disables all elements on the form
+         * @property disabled
+         * @type Boolean
+         * @default false
+         */
         disabled: {
           type: Boolean,
           value: false,
-          observer: 'disabledChanged',
+          observer: '_disabledChanged',
           title: 'Field value can not be changed'
         },
+        /**
+         * When true array must have at least one item
+         * @property required
+         * @type Boolean
+         * @default false
+         */
         required: {
           type: Boolean,
           value: false,
-          observer: 'requiredChanged',
+          observer: '_requiredChanged',
           title: 'Input required'
         },
+        /**
+         * Hides the element. When hidden nothing is displayed for the element
+         * @property hide
+         * @type Boolean
+         * @default false
+         */
+        hide: {
+          type: Boolean,
+          value: false,
+          observer: '_hideChanged',
+          title: 'Filed is  invisible'
+        },
+        /**
+        * External error message for the element
+        * @property errorMessage
+        * @type String
+        * @default ""
+        */
+        errorMessage: {
+          type: String,
+          value: '',
+          observer: '_errorMessageChanged',
+          title: 'Error message'
+        },
+        /**
+         * Valid state of the element. When each item in the array is valid array is valid. If at least one item in the the array is invalid, array is invalid
+         * @property valid
+         * @type Boolean
+         * @default true
+         */
         valid: {
           type: Boolean,
           value: true,
           notify: true,
           readOnly: true
         },
-        errorMessage: {
-          type: String,
-          value: '',
-          observer: 'errorMessageChanged',
-          title: 'Error message'
-        },
-        value: {
-          type: Array,
-          value: function() {
-            return [];
-          },
-          observer: 'valueChanged',
-          xtype: "json",
-          title: 'Value'
-        },
-        schema: {
+        /**
+         * Specification of elements that should appear on the element.<br/>
+         * Provide either an object or string.<br/>
+         * List property definitions inside properties object.<br/>
+         *
+         * @property schema
+         * @type Object | Stirng
+         * @default { properties: { value: { type: "string", title: "value"} } }
+         */
+         schema: {
           type: Object,
           value: function() {
             return {
@@ -133,27 +181,40 @@
               }
             };
           },
-          observer: 'schemaChanged',
+          observer: '_schemaChanged',
           xtype: 'json'
         },
+        /**
+         * Holds values of the elements on the element
+         *
+         * @property value
+         * @type Array | String
+         * @default []
+         */
+        value: {
+          type: Array,
+          value: function() {
+            return [];
+          },
+          observer: '_valueChanged',
+          xtype: "json",
+          title: 'Value'
+        },
+        /**
+         * Layout for the element
+         * This is used to change layout of the at-form-complex that is used as row renderer
+         * and to govern row header rendering
+         *
+         * @property layout
+         * @type String
+         * @default vertical
+         */
         layout: {
           type: String,
           value: 'horizontal',
-          observer: 'layoutChanged',
+          observer: '_layoutChanged',
           xtype: 'enum',
           xvaluelist: 'vertical,horizontal'
-        },
-        /**
-         * Hides the element. When hidden nothing is displayed for the element
-         * @property hide
-         * @type Boolean
-         * @default false
-         */
-        hide: {
-          type: Boolean,
-          value: false,
-          observer: 'hideChanged',
-          title: 'Filed is  invisible'
         }
       },
       $meta: [{
@@ -165,22 +226,12 @@
       // list type or xtype of the element that should not be supported by at-form-array
       // ------------------------------------------------------------
       _unsupported_types: ["object", "array"],
-      set valid(newValue) {},
-      hideChanged: function(newValue, oldValue) {
-        var container = this.$.atContainer;
-        this.toggleClass('hidden', newValue, container);
-        this._updateValidState();
+
+      _hideLabelChanged: function(newValue, oldValue) {
+        this.toggleClass("hidden", newValue, this.$.label);
       },
-      ready: function() {
-        var self = this;
-        this.$.addItemBtn.addEventListener('click', function(event) {
-          event.stopPropagation();
-          self._addNewItem();
-        });
-        this.toggleClass('hidden', this.layout === 'vertical', this.$.headerWrapper);
-        this._isReady = true;
-      },
-      disabledChanged: function(newValue, oldValue) {
+
+      _disabledChanged: function(newValue, oldValue) {
         var atContainer = this.$.atContainer;
         this.toggleClass('disabled', newValue, atContainer);
 
@@ -211,28 +262,25 @@
             button.removeAttribute('disabled');
           }
         }
-        this._updateValidState();
+        this._updateUIValidState();
       },
-      requiredChanged: function(newValue, oldValue) {
-        this._updateValidState();
+
+      _requiredChanged: function(newValue, oldValue) {
+        this._updateUIValidState();
       },
-      _updateValidState: function() {
-        if (!this._isReady) {
-          return;
-        }
 
-        var valid = this._validateSelf();
-
-        var formComplexElements = this.getElementsByTagName('at-form-complex');
-        var fceLen = formComplexElements.length;
-        for (var i = 0; i < fceLen && valid; i++) {
-          var formComplex = formComplexElements[i];
-          var complexValid = formComplex.valid;
-          valid = valid && complexValid;
-        }
-
-        this._setValid(valid);
+      _hideChanged: function(newValue, oldValue) {
+        var container = this.$.atContainer;
+        this.toggleClass('hidden', newValue, container);
+        this._updateUIValidState();
       },
+
+      _errorMessageChanged: function(newValue, oldValue) {
+        this._updateUIValidState();
+      },
+
+      set valid(newValue) {},
+
       _validateSelf: function() {
         var valid = this.hide || this.disabled;
         var isExternalValid = this.errorMessage == null || this.errorMessage === "";
@@ -262,6 +310,30 @@
         this.toggleClass('error', !valid, hint);
         return valid;
       },
+
+      _updateUIValidState: function() {
+        if (!this._isReady) {
+          return;
+        }
+
+        var valid = this._validateSelf();
+
+        var formComplexElements = this.getElementsByTagName('at-form-complex');
+        var fceLen = formComplexElements.length;
+        for (var i = 0; i < fceLen && valid; i++) {
+          var formComplex = formComplexElements[i];
+          var complexValid = formComplex.valid;
+          valid = valid && complexValid;
+        }
+
+        this._setValid(valid);
+      },
+
+      /// QUICK FIX remove when at-form-array gets validation behavior
+      clearUIValidState: function() {
+
+      },
+
       validate: function() {
         if (!this._isReady) {
           return;
@@ -281,21 +353,8 @@
 
         return valid;
       },
-      /// QUICK FIX remove when at-form-array gets validation behavior
-      clearUIValidState: function() {
 
-      },
-      errorMessageChanged: function(newValue, oldValue) {
-        this._updateValidState();
-      },
-      focus: function() {
-        var addItemBtn = this.$.addItemBtn;
-        addItemBtn.focus();
-      },
-      hideLabelChanged: function(newValue, oldValue) {
-        this.toggleClass("hidden", newValue, this.$.label);
-      },
-      layoutChanged: function(newValue, oldValue) {
+      _layoutChanged: function(newValue, oldValue) {
         var itemsContainer, itemContainers, items, self = this;
 
         this.toggleClass('hidden', newValue === 'vertical', this.$.headerWrapper);
@@ -338,32 +397,8 @@
           console.log('at-form-array layout not changed.');
         }
       },
-      valueChanged: function(newValue, oldValue) {
-        if (!this.schema) {
-          return;
-        }
 
-        if (schemaHelpers.isString(newValue)) {
-          try {
-            var objValue = JSON.parse(newValue);
-            this.value = objValue;
-            return;
-          } catch (e) {
-            console.log(e);
-          }
-        }
-
-        var properties = this._getSchemaProperties(this.schema);
-
-        if (properties) {
-          this._updateItemsContainerHtml();
-          this._updateValidState();
-        } else {
-          console.log('Can not update value when schema is not assigned');
-          return;
-        }
-      },
-      schemaChanged: function(newValue, oldValue) {
+      _schemaChanged: function(newValue, oldValue) {
         if (Object.prototype.toString.call(newValue) === "[object String]") {
           try {
             newValue = JSON.parse(newValue);
@@ -387,6 +422,48 @@
           this._updateHeader();
         }
       },
+
+      _valueChanged: function(newValue, oldValue) {
+        if (!this.schema) {
+          return;
+        }
+
+        if (schemaHelpers.isString(newValue)) {
+          try {
+            var objValue = JSON.parse(newValue);
+            this.value = objValue;
+            return;
+          } catch (e) {
+            console.log(e);
+          }
+        }
+
+        var properties = this._getSchemaProperties(this.schema);
+
+        if (properties) {
+          this._updateItemsContainerHtml();
+          this._updateUIValidState();
+        } else {
+          console.log('Can not update value when schema is not assigned');
+          return;
+        }
+      },
+
+      ready: function() {
+        var self = this;
+        this.$.addItemBtn.addEventListener('tap', function(event) {
+          event.stopPropagation();
+          self._addNewItem();
+        });
+        this.toggleClass('hidden', this.layout === 'vertical', this.$.headerWrapper);
+        this._isReady = true;
+      },
+
+      focus: function() {
+        var addItemBtn = this.$.addItemBtn;
+        addItemBtn.focus();
+      },
+
       _addNewItem: function() {
         var newEntry = this._createNewItemValueEntry(this.schema.items.properties);
         this.value.push(newEntry);
@@ -406,8 +483,9 @@
           this._updateItemActionButtons(itemContainer, position - 1, position + 1);
         }
 
-        this._fireValueChangedEvent();
+        this._fire_valueChangedEvent();
       },
+
       _removeItem: function(position) {
         var removedEntry = this.value.splice(position, 1);
 
@@ -441,8 +519,9 @@
           this._updateItemActionButtons(itemContainer, position - 1, valueLength);
         }
 
-        this._fireValueChangedEvent();
+        this._fire_valueChangedEvent();
       },
+
       _moveItemUp: function(position) {
         var prev = position - 1;
         var tmp;
@@ -474,8 +553,9 @@
         this._updateItemActionButtons(itemHtmlAtPosition, prev, valueLength);
         this._updateItemActionButtons(itemHtmlAtPrev, position, valueLength);
 
-        this._fireValueChangedEvent();
+        this._fire_valueChangedEvent();
       },
+
       _moveItemDown: function(position) {
         var next = position + 1;
         var tmp;
@@ -507,8 +587,9 @@
         this._updateItemActionButtons(itemHtmlAtPosition, next, valueLength);
         this._updateItemActionButtons(itemHtmlAtNext, position, valueLength);
 
-        this._fireValueChangedEvent();
+        this._fire_valueChangedEvent();
       },
+
       _getPosition: function(button) {
         var positionAttr = button.getAttribute('data-position');
         if (positionAttr) {
@@ -518,6 +599,7 @@
         console.error('Button doesn\'t have position attribute');
         return -1;
       },
+
       _updateHeader: function() {
         var keyCount;
         var properties;
@@ -556,6 +638,7 @@
           console.log("Schema: ", JSON.stringify(this.schema, undefined, ' '));
         }
       },
+
       _updateItemsContainerHtml: function() {
         var
           existingItemHtmlArr,
@@ -589,6 +672,7 @@
           valueArrIndex += 1;
         }
       },
+
       _createNewItemContainerHtml: function(item, position) {
         var self = this;
         var itemDiv = document.createElement('div');
@@ -664,6 +748,7 @@
 
         return itemDiv;
       },
+
       _createItemHtmlFromSchema: function(properties, item, position) {
         var self = this;
         var resultHtml = document.createElement('at-form-complex');
@@ -701,17 +786,20 @@
 
         return resultHtml;
       },
+
       _updateItemContainerHtml: function(existingItemHtml, item, position) {
         var itemHtml = Polymer.dom(existingItemHtml).querySelector('.item');
         this._updateItemHtml(itemHtml, item, position);
         this._updateItemActionButtons(existingItemHtml, position, this.value.length);
       },
+
       _updateItemHtml: function(existingItemHtml, item, position) {
         var prevValue = existingItemHtml.value;
         existingItemHtml.value = item;
-        existingItemHtml.valueChanged(item, prevValue);
+        existingItemHtml._valueChanged(item, prevValue);
         Polymer.dom(existingItemHtml).setAttribute('data-position', position);
       },
+
       _updateItemActionButtons: function(existingItemHtml, position, maxItems) {
         var actionButotns;
         var actionButtonsIndex;
@@ -744,6 +832,7 @@
           }
         }
       },
+
       _createNewItemValueEntry: function(properties) {
         var result = {};
 
@@ -770,6 +859,7 @@
 
         return result;
       },
+
       _setItemPropertyState: function(position, property, state, value) {
         // 1. get element by position and property name
         var element = this._getElementFromForm(position);
@@ -778,6 +868,7 @@
           element.setElementState(property, state, value);
         }
       },
+
       updateFormElementValue: function(position, value) {
         // 1. get element by position and property name
         var element = this._getElementFromForm(position);
@@ -785,15 +876,18 @@
           element.value = value;
         }
       },
+
       _getElementFromForm: function(position) {
         var query = ".item" + "[data-position=\"" + position + "\"]";
         var element = Polymer.dom(this.$.itemsContainer).querySelector(query);
         return element;
       },
+
       _updateValue: function(position, value) {
         this.value[position] = value;
-        this._fireValueChangedEvent();
+        this._fire_valueChangedEvent();
       },
+
       _cloneArrayValue: function(originalArray) {
         var clonedArray = [];
         var i;
@@ -807,17 +901,20 @@
         }
         return clonedArray;
       },
+
       _cloneObject: function(propertyNames, source, destination) {
         propertyNames.forEach(function(property, index) {
           destination[property] = source[property];
         });
       },
+
       _removeItemValueEntry: function(position) {
         this.splice('value', position, 1);
-        this._fireValueChangedEvent();
+        this._fire_valueChangedEvent();
       },
-      _fireValueChangedEvent: function() {
-        this._updateValidState();
+      
+      _fire_valueChangedEvent: function() {
+        this._updateUIValidState();
 
         this.fire('value-changed', {
           value: this.value
