@@ -33,178 +33,371 @@
       suite('schema is invalid, data is invalid', function() {
 
         test('invalid schema, invalid data both provided as arrays of invalid values', function() {
-          var invalidSchemas = [undefined, null, "", "undefined", "null", true, false, "true", "false", {},
-            [],
-            function() {
-              return undefined;
-            }
-          ];
-          var invalidDatas = [undefined, null, "", "undefined", "null", true, false, "true", "false", [], function() {
-            return undefined;
-          }];
+          var invalidSchemas = [ undefined, null, "", "undefined", true, false, 424242, 3.14159, {}, [] ];
+          var invalidDatas = [undefined, null, "", true, false, 424242, 3.14159, {} ];
+
           var formArray = document.createElement('at-form-array');
-          var insertPoint = formArray.$.insertPoint;
+          var insertPoint = formArray.$.itemsContainer;
 
           for (var i = 0; i < invalidSchemas.length; i++) {
             var schema = invalidSchemas[i];
             for (var j = 0; j < invalidDatas.length; j++) {
               var data = invalidDatas[j];
+
               formArray.schema = schema;
               formArray.value = data;
 
-              assert.isObject(formArray._internalData, 'internal data is not set');
-              assert.equal(Object.keys(formArray._internalData).length, 0, 'internal data is not empty');
-              assert.isArray(formArray._elementsToValidate, 'elements to validate is not set');
-              assert.equal(formArray._elementsToValidate.length, 0, 'elements to validate is not empty');
-              assert.equal(Polymer.dom(insertPoint).children.length, 1, 'insert point is not empty');
+              assert.equal(schemaHelpers.areEqual(formArray.schema, schema), true, "schema not set correctly");
+              assert.equal(schemaHelpers.areEqual(formArray.value, data), true, "value not set correctly");
+              assert.equal(Polymer.dom(insertPoint).children.length, 0, 'itemsContainer is not empty');
             }
           }
         });
 
-      });
+        test('invalid schema, invalid data both provided as arrays of invalid string values', function() {
+          var invalidSchemas = [ "null", "true", "false", "424242", "3.14159", "{}", "[]" ];
+          var invalidDatas = [ "null", "true", "false", "424242", "3.14159", "{}" ];
 
-      suite('schema is invalid, data is valid', function() {
-        test('schema is invalid, data is valid --- schema is provided as array of invalid values, data is empty object', function() {
-          var invalidSchemas = [undefined, null, "", "undefined", "null", true, false, "true", "false", {},
-            [],
-            function() {
-              return undefined;
-            }
-          ];
-          var data = {};
           var formArray = document.createElement('at-form-array');
-          var insertPoint = formArray.$.insertPoint;
+          var insertPoint = formArray.$.itemsContainer;
 
           for (var i = 0; i < invalidSchemas.length; i++) {
             var schema = invalidSchemas[i];
-            formArray.schema = schema;
-            formArray.value = data;
+            for (var j = 0; j < invalidDatas.length; j++) {
+              var data = invalidDatas[j];
 
-            assert.isObject(formArray._internalData, 'internal data is not set');
-            assert.equal(Object.keys(formArray._internalData).length, 0, 'internal data is not empty');
-            assert.isArray(formArray._elementsToValidate, 'elements to validate is not set');
-            assert.equal(formArray._elementsToValidate.length, 0, 'elements to validate is not empty');
-            assert.equal(Polymer.dom(insertPoint).children.length, 1, 'insert point is not empty');
+              formArray.schema = schema;
+              formArray.value = data;
+
+              assert.equal(schemaHelpers.areEqual(formArray.schema, JSON.parse(schema)), true, "schema not set correctly");
+              assert.equal(schemaHelpers.areEqual(formArray.value, JSON.parse(data)), true, "value not set correctly");
+              assert.equal(Polymer.dom(insertPoint).children.length, 0, 'itemsContainer is not empty');
+            }
+          }
+
+          formArray.schema = function() { return undefined; };
+          formArray.value = function() { return undefined; };
+
+          assert.equal(schemaHelpers.isFunction(formArray.schema), true, "schema not set correctly");
+          assert.equal(schemaHelpers.isFunction(formArray.value), true, "value not set correctly");
+          assert.equal(Polymer.dom(insertPoint).children.length, 0, 'itemsContainer is not empty');
+
+        });
+
+      });
+
+      suite('schema is invalid, value is valid', function() {
+
+        function getValue() {
+          return [{}, {}, {}];
+        }
+
+        test('invalid schema, invalid data both provided as arrays of invalid values', function() {
+          var invalidSchemas = [ undefined, null, "", "undefined", true, false, 424242, 3.14159, {}, [] ];
+
+          var formArray = document.createElement('at-form-array');
+          var insertPoint = formArray.$.itemsContainer;
+
+          for (var i = 0; i < invalidSchemas.length; i++) {
+            var schema = invalidSchemas[i];
+
+            formArray.schema = schema;
+            formArray.value = getValue();
+
+            assert.equal(schemaHelpers.areEqual(formArray.schema, schema), true, "schema not set correctly");
+            assert.equal(schemaHelpers.areEqual(formArray.value, getValue()), true, "value not set correctly");
+            assert.equal(Polymer.dom(insertPoint).children.length, 0, 'itemsContainer is not empty');
           }
         });
+
+        test('invalid schema, invalid data both provided as arrays of invalid string values', function() {
+          var invalidSchemas = [ "null", "true", "false", "424242", "3.14159", "{}", "[]" ];
+
+          var formArray = document.createElement('at-form-array');
+          var insertPoint = formArray.$.itemsContainer;
+
+          for (var i = 0; i < invalidSchemas.length; i++) {
+            var schema = invalidSchemas[i];
+
+            formArray.schema = schema;
+            formArray.value = getValue();
+
+            assert.equal(schemaHelpers.areEqual(formArray.schema, JSON.parse(schema)), true, "schema not set correctly");
+            assert.equal(schemaHelpers.areEqual(formArray.value, getValue()), true, "value not set correctly");
+            assert.equal(Polymer.dom(insertPoint).children.length, 0, 'itemsContainer is not empty');
+          }
+
+          formArray.schema = function() { return undefined; };
+          formArray.value = getValue();
+
+          assert.equal(schemaHelpers.isFunction(formArray.schema), true, "schema not set correctly");
+          assert.equal(schemaHelpers.areEqual(formArray.value, getValue()), true, "value not set correctly");
+          assert.equal(Polymer.dom(insertPoint).children.length, 0, 'itemsContainer is not empty');
+
+        });
+
       });
 
       suite('schema is valid, data is invalid', function() {
-        test('schema is valid, data is invalid - schema is { properties : {} }, data is array of invalid values', function() {
-          var schema = {
-            properties: {}
-          };
-          var invalidDatas = [undefined, null, "", "undefined", "null", true, false, "true", "false", [], function() {
-            return undefined;
-          }];
+
+        function getSchema() {
+          return {
+            items: {
+              properties: {
+                text1: {
+                  type: "string"
+                },
+                text2: {
+                  type: "string"
+                },
+                text1: {
+                  type: "string"
+                }
+              }
+            }
+          }
+        }
+
+        function getSchemaRules() {
+          return {
+            schema: {
+              items: {
+                properties: {
+                  text1: {
+                    type: "string"
+                  },
+                  text2: {
+                    type: "string"
+                  },
+                  text1: {
+                    type: "string"
+                  }
+                }
+              }
+            },
+            rules: []
+          }
+        }
+
+        test('valid schema, invalid data provided as arrays of invalid values', function() {
+          var invalidDatas = [undefined, null, "", true, false, 424242, 3.14159, {} ];
+
           var formArray = document.createElement('at-form-array');
-          var insertPoint = formArray.$.insertPoint;
+          var insertPoint = formArray.$.itemsContainer;
 
           for (var j = 0; j < invalidDatas.length; j++) {
             var data = invalidDatas[j];
-            formArray.schema = schema;
+
+            formArray.schema = getSchema();
             formArray.value = data;
 
-            assert.isObject(formArray._internalData, 'internal data is not set');
-            assert.equal(Object.keys(formArray._internalData).length, 0, 'internal data is not empty');
-            assert.isArray(formArray._elementsToValidate, 'elements to validate is not set');
-            assert.equal(formArray._elementsToValidate.length, 0, 'elements to validate is not empty');
-            assert.equal(Polymer.dom(insertPoint).children.length, 1, 'insert point is not empty');
+            assert.equal(schemaHelpers.areEqual(formArray.schema, getSchema()), true, "schema not set correctly");
+            assert.equal(schemaHelpers.areEqual(formArray.value, data), true, "value not set correctly");
+            assert.equal(Polymer.dom(insertPoint).children.length, 0, 'itemsContainer is not empty');
           }
+        });
+
+        test('valid schema, invalid data provided as arrays of invalid string values', function() {
+          var invalidDatas = [ "null", "true", "false", "424242", "3.14159", "{}" ];
+
+          var formArray = document.createElement('at-form-array');
+          var insertPoint = formArray.$.itemsContainer;
+
+          for (var j = 0; j < invalidDatas.length; j++) {
+            var data = invalidDatas[j];
+
+            formArray.schema = getSchema();
+            formArray.value = data;
+
+            assert.equal(schemaHelpers.areEqual(formArray.schema, getSchema()), true, "schema not set correctly");
+            assert.equal(schemaHelpers.areEqual(formArray.value, JSON.parse(data)), true, "value not set correctly");
+            assert.equal(Polymer.dom(insertPoint).children.length, 0, 'itemsContainer is not empty');
+          }
+
+          formArray.schema = getSchema();
+          formArray.value = function() { return undefined; };
+
+          assert.equal(schemaHelpers.areEqual(formArray.schema, getSchema()), true, "schema not set correctly");
+          assert.equal(schemaHelpers.isFunction(formArray.value), true, "value not set correctly");
+          assert.equal(Polymer.dom(insertPoint).children.length, 0, 'itemsContainer is not empty');
+        });
+
+        test('valid schema with rules, invalid data provided as arrays of invalid values', function() {
+          var invalidDatas = [undefined, null, "", true, false, 424242, 3.14159, {} ];
+
+          var formArray = document.createElement('at-form-array');
+          var insertPoint = formArray.$.itemsContainer;
+
+          for (var j = 0; j < invalidDatas.length; j++) {
+            var data = invalidDatas[j];
+
+            formArray.schema = getSchemaRules();
+            formArray.value = data;
+
+            assert.equal(schemaHelpers.areEqual(formArray.schema, getSchemaRules()), true, "schema not set correctly");
+            assert.equal(schemaHelpers.areEqual(formArray.value, data), true, "value not set correctly");
+            assert.equal(Polymer.dom(insertPoint).children.length, 0, 'itemsContainer is not empty');
+          }
+        });
+
+        test('valid schema with rules, invalid data provided as arrays of invalid string values', function() {
+          var invalidDatas = [ "null", "true", "false", "424242", "3.14159", "{}" ];
+
+          var formArray = document.createElement('at-form-array');
+          var insertPoint = formArray.$.itemsContainer;
+
+          for (var j = 0; j < invalidDatas.length; j++) {
+            var data = invalidDatas[j];
+
+            formArray.schema = getSchemaRules();
+            formArray.value = data;
+
+            assert.equal(schemaHelpers.areEqual(formArray.schema, getSchemaRules()), true, "schema not set correctly");
+            assert.equal(schemaHelpers.areEqual(formArray.value, JSON.parse(data)), true, "value not set correctly");
+            assert.equal(Polymer.dom(insertPoint).children.length, 0, 'itemsContainer is not empty');
+          }
+
+          formArray.schema = getSchemaRules();
+          formArray.value = function() { return undefined; };
+
+          assert.equal(schemaHelpers.areEqual(formArray.schema, getSchemaRules()), true, "schema not set correctly");
+          assert.equal(schemaHelpers.isFunction(formArray.value), true, "value not set correctly");
+          assert.equal(Polymer.dom(insertPoint).children.length, 0, 'itemsContainer is not empty');
+
         });
       });
 
-      suite('schema is valid, data is valid', function() {
+      suite('schema is valid, value is valid, schema set first, value next', function() {
 
-        var schema = {
-          properties: {
-            text1: {
-              type: "string"
-            },
-            text2: {
-              type: "string"
-            },
-            text3: {
-              type: "string",
-              "default": "text3 lorem ipsum"
-            },
-            text4: {
-              type: "string",
-              "default": "text4 lorem ipsum"
+        function getSchema() {
+          return {
+            items: {
+              properties: {
+                text1: {
+                  type: "string"
+                },
+                text2: {
+                  type: "string"
+                },
+                text3: {
+                  type: "string",
+                  "default": "text3 lorem ipsum"
+                },
+                text4: {
+                  type: "string",
+                  "default": "text4 lorem ipsum"
+                }
+              }
             }
           }
-        };
+        }
 
-        var stringSchema = JSON.stringify(schema);
+        var stringSchema = JSON.stringify(getSchema());
 
         function getData() {
-          return {
-            text1: "text1 lorem ipsum",
-            text2: "text2 lorem ipsum",
-            text3: "text3 ipsum lorem",
-            text4: "text4 ipsum lorem"
-          };
+          return [
+            {
+
+            },
+            {
+              text1: "",
+              text2: "",
+              text3: "text3 lorem ipsum",
+              text4: "text4 lorem ipsum"
+            },
+            {
+              text1: "text1 lorem ipsum",
+              text2: "text2 lorem ipsum",
+              text3: "",
+              text4: ""
+            },
+            {
+              text1: "text1 lorem ipsum",
+              text2: "text2 lorem ipsum",
+              text3: "text3 ipsum lorem",
+              text4: "text4 ipsum lorem"
+            }
+          ];
         }
 
         var stringData = JSON.stringify(getData());
 
         test('schema is string, data is string', function(done) {
           var formArray = document.createElement('at-form-array');
-          formArray.schema = stringSchema;
-
-          // internalData must have entries for each element
-          assert.isObject(formArray._internalData, 'internal data is not set');
-          assert.equal(Object.keys(formArray._internalData).length, 4, '_internalData doesn\'t contain correct number of properties');
-          assert.equal(formArray._internalData.text1, "", 'text1 value not correct in _internalData');
-          assert.equal(formArray._internalData.text2, "", 'text2 value not correct in _internalData');
-          assert.equal(formArray._internalData.text3, "text3 lorem ipsum", 'text3 value not correct in _internalData');
-          assert.equal(formArray._internalData.text4, "text4 lorem ipsum", 'text4 value not correct in _internalData');
-
-          assert.equal(formArray.value.text1, "", 'text1 value not correct in data');
-          assert.equal(formArray.value.text2, "", 'text2 value not correct in data');
-          assert.equal(formArray.value.text3, "text3 lorem ipsum", 'text3 value not correct in data');
-          assert.equal(formArray.value.text4, "text4 lorem ipsum", 'text4 value not correct in data');
-
-          assert.isArray(formArray._elementsToValidate, 'elements to validate is not set');
-          assert.equal(formArray._elementsToValidate.length, 4, 'elements to validate doesn\'t contain corrent number of elements');
-          // _elementsToValidate must have entries for each element
-          assert.equal(formArray._elementsToValidate[0].id, "text1", 'text1 not present in _elementsToValidate');
-          assert.equal(formArray._elementsToValidate[1].id, "text2", 'text2 not present in _elementsToValidate');
-          assert.equal(formArray._elementsToValidate[2].id, "text3", 'text3 not present in _elementsToValidate');
-          assert.equal(formArray._elementsToValidate[3].id, "text4", 'text4 not present in _elementsToValidate');
-
-          var insertPoint = formArray.$.insertPoint;
-          assert.equal(Polymer.dom(insertPoint).children.length, 5, 'insert point doesn\'t contain corrent number of elements');
+          var itemsContainer = formArray.$.itemsContainer;
 
           var eventCount = 0;
           formArray.addEventListener('value-changed', function(event) {
             eventCount += 1;
           });
 
+          formArray.schema = stringSchema;
+
+          assert.equal(schemaHelpers.areEqual(formArray.schema, getSchema()), true, 'schema not set correctly');
+          assert.equal(schemaHelpers.areEqual(formArray.value, []), true, 'value not set correctly');
+          assert.equal(Polymer.dom(itemsContainer).children.length, 0, 'items container should not have elements');
+
           formArray.value = stringData;
 
-          assert.isObject(formArray._internalData, 'internal data is not set');
-          assert.equal(Object.keys(formArray._internalData).length, 4, '_internalData doesn\'t contain correct number of properties');
-          assert.equal(formArray._internalData.text1, "text1 lorem ipsum", 'text1 value not correct in _internalData');
-          assert.equal(formArray._internalData.text2, "text2 lorem ipsum", 'text2 value not correct in _internalData');
-          assert.equal(formArray._internalData.text3, "text3 ipsum lorem", 'text3 value not correct in _internalData');
-          assert.equal(formArray._internalData.text4, "text4 ipsum lorem", 'text4 value not correct in _internalData');
+          assert.equal(schemaHelpers.areEqual(formArray.schema, getSchema()), true, 'schema not set correctly');
+          assert.equal(schemaHelpers.areEqual(formArray.value, getData()), true, 'value not set correctly');
+          assert.equal(Polymer.dom(itemsContainer).children.length, 4, 'items container should not have elements');
 
-          assert.equal(formArray.value.text1, "text1 lorem ipsum", 'text1 value not correct in data');
-          assert.equal(formArray.value.text2, "text2 lorem ipsum", 'text2 value not correct in data');
-          assert.equal(formArray.value.text3, "text3 ipsum lorem", 'text3 value not correct in data');
-          assert.equal(formArray.value.text4, "text4 ipsum lorem", 'text4 value not correct in data');
+          var expectedValues = [
+            {
+              text1: "",
+              text2: "",
+              text3: "text3 lorem ipsum",
+              text4: "text4 lorem ipsum"
+            },
+            {
+              text1: "",
+              text2: "",
+              text3: "text3 lorem ipsum",
+              text4: "text4 lorem ipsum"
+            },
+            {
+              text1: "text1 lorem ipsum",
+              text2: "text2 lorem ipsum",
+              text3: "",
+              text4: ""
+            },
+            {
+              text1: "text1 lorem ipsum",
+              text2: "text2 lorem ipsum",
+              text3: "text3 ipsum lorem",
+              text4: "text4 ipsum lorem"
+            }
+          ];
 
-          assert.isArray(formArray._elementsToValidate, 'elements to validate is not set');
-          assert.equal(formArray._elementsToValidate.length, 4, 'elements to validate doesn\'t contain corrent number of elements');
-          // _elementsToValidate must have entries for each element
-          assert.equal(formArray._elementsToValidate[0].id, "text1", 'text1 not present in _elementsToValidate');
-          assert.equal(formArray._elementsToValidate[1].id, "text2", 'text2 not present in _elementsToValidate');
-          assert.equal(formArray._elementsToValidate[2].id, "text3", 'text3 not present in _elementsToValidate');
-          assert.equal(formArray._elementsToValidate[3].id, "text4", 'text4 not present in _elementsToValidate');
+          for (var i = 0; i < formArray.value.length; i++) {
+            var formComplex = formArray._getElementFromForm(i);
+            var expectedValue = expectedValues[i];
 
-          var insertPoint = formArray.$.insertPoint;
-          assert.equal(Polymer.dom(insertPoint).children.length, 5, 'insert point doesn\'t contain corrent number of elements');
+            // internalData must have entries for each element
+            assert.isObject(formComplex._internalData, 'internal data is not set');
+            assert.equal(Object.keys(formComplex._internalData).length, 4, '_internalData doesn\'t contain correct number of properties');
+            assert.equal(formComplex._internalData.text1, expectedValue.text1, 'text1 value not correct in _internalData');
+            assert.equal(formComplex._internalData.text2, expectedValue.text2, 'text2 value not correct in _internalData');
+            assert.equal(formComplex._internalData.text3, expectedValue.text3, 'text3 value not correct in _internalData');
+            assert.equal(formComplex._internalData.text4, expectedValue.text4, 'text4 value not correct in _internalData');
+
+            assert.equal(formComplex.value.text1, expectedValue.text1, 'text1 value not correct in data');
+            assert.equal(formComplex.value.text2, expectedValue.text2, 'text2 value not correct in data');
+            assert.equal(formComplex.value.text3, expectedValue.text3, 'text3 value not correct in data');
+            assert.equal(formComplex.value.text4, expectedValue.text4, 'text4 value not correct in data');
+
+            assert.isArray(formComplex._elementsToValidate, 'elements to validate is not set');
+            assert.equal(formComplex._elementsToValidate.length, 4, 'elements to validate doesn\'t contain corrent number of elements');
+            // _elementsToValidate must have entries for each element
+            assert.equal(formComplex._elementsToValidate[0].id, "text1", 'text1 not present in _elementsToValidate');
+            assert.equal(formComplex._elementsToValidate[1].id, "text2", 'text2 not present in _elementsToValidate');
+            assert.equal(formComplex._elementsToValidate[2].id, "text3", 'text3 not present in _elementsToValidate');
+            assert.equal(formComplex._elementsToValidate[3].id, "text4", 'text4 not present in _elementsToValidate');
+
+            var insertPoint = formComplex.$.insertPoint;
+            assert.equal(Polymer.dom(insertPoint).children.length, 5, 'insert point doesn\'t contain corrent number of elements');
+          }
 
           flush(function() {
             assert.equal(eventCount, 1, 'at-form-array didn\'t fire corrent number of events');
@@ -214,61 +407,80 @@
 
         test('schema is string, data is object', function(done) {
           var formArray = document.createElement('at-form-array');
-          formArray.schema = stringSchema;
-
-          // internalData must have entries for each element
-          assert.isObject(formArray._internalData, 'internal data is not set');
-          assert.equal(Object.keys(formArray._internalData).length, 4, '_internalData doesn\'t contain correct number of properties');
-          assert.equal(formArray._internalData.text1, "", 'text1 value not correct in _internalData');
-          assert.equal(formArray._internalData.text2, "", 'text2 value not correct in _internalData');
-          assert.equal(formArray._internalData.text3, "text3 lorem ipsum", 'text3 value not correct in _internalData');
-          assert.equal(formArray._internalData.text4, "text4 lorem ipsum", 'text4 value not correct in _internalData');
-
-          assert.equal(formArray.value.text1, "", 'text1 value not correct in data');
-          assert.equal(formArray.value.text2, "", 'text2 value not correct in data');
-          assert.equal(formArray.value.text3, "text3 lorem ipsum", 'text3 value not correct in data');
-          assert.equal(formArray.value.text4, "text4 lorem ipsum", 'text4 value not correct in data');
-
-          assert.isArray(formArray._elementsToValidate, 'elements to validate is not set');
-          assert.equal(formArray._elementsToValidate.length, 4, 'elements to validate doesn\'t contain corrent number of elements');
-          // _elementsToValidate must have entries for each element
-          assert.equal(formArray._elementsToValidate[0].id, "text1", 'text1 not present in _elementsToValidate');
-          assert.equal(formArray._elementsToValidate[1].id, "text2", 'text2 not present in _elementsToValidate');
-          assert.equal(formArray._elementsToValidate[2].id, "text3", 'text3 not present in _elementsToValidate');
-          assert.equal(formArray._elementsToValidate[3].id, "text4", 'text4 not present in _elementsToValidate');
-
-          var insertPoint = formArray.$.insertPoint;
-          assert.equal(Polymer.dom(insertPoint).children.length, 5, 'insert point doesn\'t contain corrent number of elements');
+          var itemsContainer = formArray.$.itemsContainer;
 
           var eventCount = 0;
           formArray.addEventListener('value-changed', function(event) {
             eventCount += 1;
           });
 
+          formArray.schema = stringSchema;
+
+          assert.equal(schemaHelpers.areEqual(formArray.schema, getSchema()), true, 'schema not set correctly');
+          assert.equal(schemaHelpers.areEqual(formArray.value, []), true, 'value not set correctly');
+          assert.equal(Polymer.dom(itemsContainer).children.length, 0, 'items container should not have elements');
+
           formArray.value = getData();
 
-          assert.isObject(formArray._internalData, 'internal data is not set');
-          assert.equal(Object.keys(formArray._internalData).length, 4, '_internalData doesn\'t contain correct number of properties');
-          assert.equal(formArray._internalData.text1, "text1 lorem ipsum", 'text1 value not correct in _internalData');
-          assert.equal(formArray._internalData.text2, "text2 lorem ipsum", 'text2 value not correct in _internalData');
-          assert.equal(formArray._internalData.text3, "text3 ipsum lorem", 'text3 value not correct in _internalData');
-          assert.equal(formArray._internalData.text4, "text4 ipsum lorem", 'text4 value not correct in _internalData');
+          assert.equal(schemaHelpers.areEqual(formArray.schema, getSchema()), true, 'schema not set correctly');
+          assert.equal(schemaHelpers.areEqual(formArray.value, getData()), true, 'value not set correctly');
+          assert.equal(Polymer.dom(itemsContainer).children.length, 4, 'items container should not have elements');
 
-          assert.equal(formArray.value.text1, "text1 lorem ipsum", 'text1 value not correct in data');
-          assert.equal(formArray.value.text2, "text2 lorem ipsum", 'text2 value not correct in data');
-          assert.equal(formArray.value.text3, "text3 ipsum lorem", 'text3 value not correct in data');
-          assert.equal(formArray.value.text4, "text4 ipsum lorem", 'text4 value not correct in data');
+          var expectedValues = [
+            {
+              text1: "",
+              text2: "",
+              text3: "text3 lorem ipsum",
+              text4: "text4 lorem ipsum"
+            },
+            {
+              text1: "",
+              text2: "",
+              text3: "text3 lorem ipsum",
+              text4: "text4 lorem ipsum"
+            },
+            {
+              text1: "text1 lorem ipsum",
+              text2: "text2 lorem ipsum",
+              text3: "",
+              text4: ""
+            },
+            {
+              text1: "text1 lorem ipsum",
+              text2: "text2 lorem ipsum",
+              text3: "text3 ipsum lorem",
+              text4: "text4 ipsum lorem"
+            }
+          ];
 
-          assert.isArray(formArray._elementsToValidate, 'elements to validate is not set');
-          assert.equal(formArray._elementsToValidate.length, 4, 'elements to validate doesn\'t contain corrent number of elements');
-          // _elementsToValidate must have entries for each element
-          assert.equal(formArray._elementsToValidate[0].id, "text1", 'text1 not present in _elementsToValidate');
-          assert.equal(formArray._elementsToValidate[1].id, "text2", 'text2 not present in _elementsToValidate');
-          assert.equal(formArray._elementsToValidate[2].id, "text3", 'text3 not present in _elementsToValidate');
-          assert.equal(formArray._elementsToValidate[3].id, "text4", 'text4 not present in _elementsToValidate');
+          for (var i = 0; i < formArray.value.length; i++) {
+            var formComplex = formArray._getElementFromForm(i);
+            var expectedValue = expectedValues[i];
 
-          var insertPoint = formArray.$.insertPoint;
-          assert.equal(Polymer.dom(insertPoint).children.length, 5, 'insert point doesn\'t contain corrent number of elements');
+            // internalData must have entries for each element
+            assert.isObject(formComplex._internalData, 'internal data is not set');
+            assert.equal(Object.keys(formComplex._internalData).length, 4, '_internalData doesn\'t contain correct number of properties');
+            assert.equal(formComplex._internalData.text1, expectedValue.text1, 'text1 value not correct in _internalData');
+            assert.equal(formComplex._internalData.text2, expectedValue.text2, 'text2 value not correct in _internalData');
+            assert.equal(formComplex._internalData.text3, expectedValue.text3, 'text3 value not correct in _internalData');
+            assert.equal(formComplex._internalData.text4, expectedValue.text4, 'text4 value not correct in _internalData');
+
+            assert.equal(formComplex.value.text1, expectedValue.text1, 'text1 value not correct in data');
+            assert.equal(formComplex.value.text2, expectedValue.text2, 'text2 value not correct in data');
+            assert.equal(formComplex.value.text3, expectedValue.text3, 'text3 value not correct in data');
+            assert.equal(formComplex.value.text4, expectedValue.text4, 'text4 value not correct in data');
+
+            assert.isArray(formComplex._elementsToValidate, 'elements to validate is not set');
+            assert.equal(formComplex._elementsToValidate.length, 4, 'elements to validate doesn\'t contain corrent number of elements');
+            // _elementsToValidate must have entries for each element
+            assert.equal(formComplex._elementsToValidate[0].id, "text1", 'text1 not present in _elementsToValidate');
+            assert.equal(formComplex._elementsToValidate[1].id, "text2", 'text2 not present in _elementsToValidate');
+            assert.equal(formComplex._elementsToValidate[2].id, "text3", 'text3 not present in _elementsToValidate');
+            assert.equal(formComplex._elementsToValidate[3].id, "text4", 'text4 not present in _elementsToValidate');
+
+            var insertPoint = formComplex.$.insertPoint;
+            assert.equal(Polymer.dom(insertPoint).children.length, 5, 'insert point doesn\'t contain corrent number of elements');
+          }
 
           flush(function() {
             assert.equal(eventCount, 1, 'at-form-array didn\'t fire corrent number of events');
@@ -278,61 +490,80 @@
 
         test('schema is object, data is string', function(done) {
           var formArray = document.createElement('at-form-array');
-          formArray.schema = schema;
-
-          // internalData must have entries for each element
-          assert.isObject(formArray._internalData, 'internal data is not set');
-          assert.equal(Object.keys(formArray._internalData).length, 4, '_internalData doesn\'t contain correct number of properties');
-          assert.equal(formArray._internalData.text1, "", 'text1 value not correct in _internalData');
-          assert.equal(formArray._internalData.text2, "", 'text2 value not correct in _internalData');
-          assert.equal(formArray._internalData.text3, "text3 lorem ipsum", 'text3 value not correct in _internalData');
-          assert.equal(formArray._internalData.text4, "text4 lorem ipsum", 'text4 value not correct in _internalData');
-
-          assert.equal(formArray.value.text1, "", 'text1 value not correct in data');
-          assert.equal(formArray.value.text2, "", 'text2 value not correct in data');
-          assert.equal(formArray.value.text3, "text3 lorem ipsum", 'text3 value not correct in data');
-          assert.equal(formArray.value.text4, "text4 lorem ipsum", 'text4 value not correct in data');
-
-          assert.isArray(formArray._elementsToValidate, 'elements to validate is not set');
-          assert.equal(formArray._elementsToValidate.length, 4, 'elements to validate doesn\'t contain corrent number of elements');
-          // _elementsToValidate must have entries for each element
-          assert.equal(formArray._elementsToValidate[0].id, "text1", 'text1 not present in _elementsToValidate');
-          assert.equal(formArray._elementsToValidate[1].id, "text2", 'text2 not present in _elementsToValidate');
-          assert.equal(formArray._elementsToValidate[2].id, "text3", 'text3 not present in _elementsToValidate');
-          assert.equal(formArray._elementsToValidate[3].id, "text4", 'text4 not present in _elementsToValidate');
-
-          var insertPoint = formArray.$.insertPoint;
-          assert.equal(Polymer.dom(insertPoint).children.length, 5, 'insert point doesn\'t contain corrent number of elements');
+          var itemsContainer = formArray.$.itemsContainer;
 
           var eventCount = 0;
           formArray.addEventListener('value-changed', function(event) {
             eventCount += 1;
           });
 
+          formArray.schema = getSchema();
+
+          assert.equal(schemaHelpers.areEqual(formArray.schema, getSchema()), true, 'schema not set correctly');
+          assert.equal(schemaHelpers.areEqual(formArray.value, []), true, 'value not set correctly');
+          assert.equal(Polymer.dom(itemsContainer).children.length, 0, 'items container should not have elements');
+
           formArray.value = stringData;
 
-          assert.isObject(formArray._internalData, 'internal data is not set');
-          assert.equal(Object.keys(formArray._internalData).length, 4, '_internalData doesn\'t contain correct number of properties');
-          assert.equal(formArray._internalData.text1, "text1 lorem ipsum", 'text1 value not correct in _internalData');
-          assert.equal(formArray._internalData.text2, "text2 lorem ipsum", 'text2 value not correct in _internalData');
-          assert.equal(formArray._internalData.text3, "text3 ipsum lorem", 'text3 value not correct in _internalData');
-          assert.equal(formArray._internalData.text4, "text4 ipsum lorem", 'text4 value not correct in _internalData');
+          assert.equal(schemaHelpers.areEqual(formArray.schema, getSchema()), true, 'schema not set correctly');
+          assert.equal(schemaHelpers.areEqual(formArray.value, getData()), true, 'value not set correctly');
+          assert.equal(Polymer.dom(itemsContainer).children.length, 4, 'items container should not have elements');
 
-          assert.equal(formArray.value.text1, "text1 lorem ipsum", 'text1 value not correct in data');
-          assert.equal(formArray.value.text2, "text2 lorem ipsum", 'text2 value not correct in data');
-          assert.equal(formArray.value.text3, "text3 ipsum lorem", 'text3 value not correct in data');
-          assert.equal(formArray.value.text4, "text4 ipsum lorem", 'text4 value not correct in data');
+          var expectedValues = [
+            {
+              text1: "",
+              text2: "",
+              text3: "text3 lorem ipsum",
+              text4: "text4 lorem ipsum"
+            },
+            {
+              text1: "",
+              text2: "",
+              text3: "text3 lorem ipsum",
+              text4: "text4 lorem ipsum"
+            },
+            {
+              text1: "text1 lorem ipsum",
+              text2: "text2 lorem ipsum",
+              text3: "",
+              text4: ""
+            },
+            {
+              text1: "text1 lorem ipsum",
+              text2: "text2 lorem ipsum",
+              text3: "text3 ipsum lorem",
+              text4: "text4 ipsum lorem"
+            }
+          ];
 
-          assert.isArray(formArray._elementsToValidate, 'elements to validate is not set');
-          assert.equal(formArray._elementsToValidate.length, 4, 'elements to validate doesn\'t contain corrent number of elements');
-          // _elementsToValidate must have entries for each element
-          assert.equal(formArray._elementsToValidate[0].id, "text1", 'text1 not present in _elementsToValidate');
-          assert.equal(formArray._elementsToValidate[1].id, "text2", 'text2 not present in _elementsToValidate');
-          assert.equal(formArray._elementsToValidate[2].id, "text3", 'text3 not present in _elementsToValidate');
-          assert.equal(formArray._elementsToValidate[3].id, "text4", 'text4 not present in _elementsToValidate');
+          for (var i = 0; i < formArray.value.length; i++) {
+            var formComplex = formArray._getElementFromForm(i);
+            var expectedValue = expectedValues[i];
 
-          var insertPoint = formArray.$.insertPoint;
-          assert.equal(Polymer.dom(insertPoint).children.length, 5, 'insert point doesn\'t contain corrent number of elements');
+            // internalData must have entries for each element
+            assert.isObject(formComplex._internalData, 'internal data is not set');
+            assert.equal(Object.keys(formComplex._internalData).length, 4, '_internalData doesn\'t contain correct number of properties');
+            assert.equal(formComplex._internalData.text1, expectedValue.text1, 'text1 value not correct in _internalData');
+            assert.equal(formComplex._internalData.text2, expectedValue.text2, 'text2 value not correct in _internalData');
+            assert.equal(formComplex._internalData.text3, expectedValue.text3, 'text3 value not correct in _internalData');
+            assert.equal(formComplex._internalData.text4, expectedValue.text4, 'text4 value not correct in _internalData');
+
+            assert.equal(formComplex.value.text1, expectedValue.text1, 'text1 value not correct in data');
+            assert.equal(formComplex.value.text2, expectedValue.text2, 'text2 value not correct in data');
+            assert.equal(formComplex.value.text3, expectedValue.text3, 'text3 value not correct in data');
+            assert.equal(formComplex.value.text4, expectedValue.text4, 'text4 value not correct in data');
+
+            assert.isArray(formComplex._elementsToValidate, 'elements to validate is not set');
+            assert.equal(formComplex._elementsToValidate.length, 4, 'elements to validate doesn\'t contain corrent number of elements');
+            // _elementsToValidate must have entries for each element
+            assert.equal(formComplex._elementsToValidate[0].id, "text1", 'text1 not present in _elementsToValidate');
+            assert.equal(formComplex._elementsToValidate[1].id, "text2", 'text2 not present in _elementsToValidate');
+            assert.equal(formComplex._elementsToValidate[2].id, "text3", 'text3 not present in _elementsToValidate');
+            assert.equal(formComplex._elementsToValidate[3].id, "text4", 'text4 not present in _elementsToValidate');
+
+            var insertPoint = formComplex.$.insertPoint;
+            assert.equal(Polymer.dom(insertPoint).children.length, 5, 'insert point doesn\'t contain corrent number of elements');
+          }
 
           flush(function() {
             assert.equal(eventCount, 1, 'at-form-array didn\'t fire corrent number of events');
@@ -342,61 +573,80 @@
 
         test('schema is object, data is object', function(done) {
           var formArray = document.createElement('at-form-array');
-          formArray.schema = schema;
-
-          // internalData must have entries for each element
-          assert.isObject(formArray._internalData, 'internal data is not set');
-          assert.equal(Object.keys(formArray._internalData).length, 4, '_internalData doesn\'t contain correct number of properties');
-          assert.equal(formArray._internalData.text1, "", 'text1 value not correct in _internalData');
-          assert.equal(formArray._internalData.text2, "", 'text2 value not correct in _internalData');
-          assert.equal(formArray._internalData.text3, "text3 lorem ipsum", 'text3 value not correct in _internalData');
-          assert.equal(formArray._internalData.text4, "text4 lorem ipsum", 'text4 value not correct in _internalData');
-
-          assert.equal(formArray.value.text1, "", 'text1 value not correct in data');
-          assert.equal(formArray.value.text2, "", 'text2 value not correct in data');
-          assert.equal(formArray.value.text3, "text3 lorem ipsum", 'text3 value not correct in data');
-          assert.equal(formArray.value.text4, "text4 lorem ipsum", 'text4 value not correct in data');
-
-          assert.isArray(formArray._elementsToValidate, 'elements to validate is not set');
-          assert.equal(formArray._elementsToValidate.length, 4, 'elements to validate doesn\'t contain corrent number of elements');
-          // _elementsToValidate must have entries for each element
-          assert.equal(formArray._elementsToValidate[0].id, "text1", 'text1 not present in _elementsToValidate');
-          assert.equal(formArray._elementsToValidate[1].id, "text2", 'text2 not present in _elementsToValidate');
-          assert.equal(formArray._elementsToValidate[2].id, "text3", 'text3 not present in _elementsToValidate');
-          assert.equal(formArray._elementsToValidate[3].id, "text4", 'text4 not present in _elementsToValidate');
-
-          var insertPoint = formArray.$.insertPoint;
-          assert.equal(Polymer.dom(insertPoint).children.length, 5, 'insert point doesn\'t contain corrent number of elements');
+          var itemsContainer = formArray.$.itemsContainer;
 
           var eventCount = 0;
           formArray.addEventListener('value-changed', function(event) {
             eventCount += 1;
           });
 
+          formArray.schema = getSchema();
+
+          assert.equal(schemaHelpers.areEqual(formArray.schema, getSchema()), true, 'schema not set correctly');
+          assert.equal(schemaHelpers.areEqual(formArray.value, []), true, 'value not set correctly');
+          assert.equal(Polymer.dom(itemsContainer).children.length, 0, 'items container should not have elements');
+
           formArray.value = getData();
 
-          assert.isObject(formArray._internalData, 'internal data is not set');
-          assert.equal(Object.keys(formArray._internalData).length, 4, '_internalData doesn\'t contain correct number of properties');
-          assert.equal(formArray._internalData.text1, "text1 lorem ipsum", 'text1 value not correct in _internalData');
-          assert.equal(formArray._internalData.text2, "text2 lorem ipsum", 'text2 value not correct in _internalData');
-          assert.equal(formArray._internalData.text3, "text3 ipsum lorem", 'text3 value not correct in _internalData');
-          assert.equal(formArray._internalData.text4, "text4 ipsum lorem", 'text4 value not correct in _internalData');
+          assert.equal(schemaHelpers.areEqual(formArray.schema, getSchema()), true, 'schema not set correctly');
+          assert.equal(schemaHelpers.areEqual(formArray.value, getData()), true, 'value not set correctly');
+          assert.equal(Polymer.dom(itemsContainer).children.length, 4, 'items container should not have elements');
 
-          assert.equal(formArray.value.text1, "text1 lorem ipsum", 'text1 value not correct in data');
-          assert.equal(formArray.value.text2, "text2 lorem ipsum", 'text2 value not correct in data');
-          assert.equal(formArray.value.text3, "text3 ipsum lorem", 'text3 value not correct in data');
-          assert.equal(formArray.value.text4, "text4 ipsum lorem", 'text4 value not correct in data');
+          var expectedValues = [
+            {
+              text1: "",
+              text2: "",
+              text3: "text3 lorem ipsum",
+              text4: "text4 lorem ipsum"
+            },
+            {
+              text1: "",
+              text2: "",
+              text3: "text3 lorem ipsum",
+              text4: "text4 lorem ipsum"
+            },
+            {
+              text1: "text1 lorem ipsum",
+              text2: "text2 lorem ipsum",
+              text3: "",
+              text4: ""
+            },
+            {
+              text1: "text1 lorem ipsum",
+              text2: "text2 lorem ipsum",
+              text3: "text3 ipsum lorem",
+              text4: "text4 ipsum lorem"
+            }
+          ];
 
-          assert.isArray(formArray._elementsToValidate, 'elements to validate is not set');
-          assert.equal(formArray._elementsToValidate.length, 4, 'elements to validate doesn\'t contain corrent number of elements');
-          // _elementsToValidate must have entries for each element
-          assert.equal(formArray._elementsToValidate[0].id, "text1", 'text1 not present in _elementsToValidate');
-          assert.equal(formArray._elementsToValidate[1].id, "text2", 'text2 not present in _elementsToValidate');
-          assert.equal(formArray._elementsToValidate[2].id, "text3", 'text3 not present in _elementsToValidate');
-          assert.equal(formArray._elementsToValidate[3].id, "text4", 'text4 not present in _elementsToValidate');
+          for (var i = 0; i < formArray.value.length; i++) {
+            var formComplex = formArray._getElementFromForm(i);
+            var expectedValue = expectedValues[i];
 
-          var insertPoint = formArray.$.insertPoint;
-          assert.equal(Polymer.dom(insertPoint).children.length, 5, 'insert point doesn\'t contain corrent number of elements');
+            // internalData must have entries for each element
+            assert.isObject(formComplex._internalData, 'internal data is not set');
+            assert.equal(Object.keys(formComplex._internalData).length, 4, '_internalData doesn\'t contain correct number of properties');
+            assert.equal(formComplex._internalData.text1, expectedValue.text1, 'text1 value not correct in _internalData');
+            assert.equal(formComplex._internalData.text2, expectedValue.text2, 'text2 value not correct in _internalData');
+            assert.equal(formComplex._internalData.text3, expectedValue.text3, 'text3 value not correct in _internalData');
+            assert.equal(formComplex._internalData.text4, expectedValue.text4, 'text4 value not correct in _internalData');
+
+            assert.equal(formComplex.value.text1, expectedValue.text1, 'text1 value not correct in data');
+            assert.equal(formComplex.value.text2, expectedValue.text2, 'text2 value not correct in data');
+            assert.equal(formComplex.value.text3, expectedValue.text3, 'text3 value not correct in data');
+            assert.equal(formComplex.value.text4, expectedValue.text4, 'text4 value not correct in data');
+
+            assert.isArray(formComplex._elementsToValidate, 'elements to validate is not set');
+            assert.equal(formComplex._elementsToValidate.length, 4, 'elements to validate doesn\'t contain corrent number of elements');
+            // _elementsToValidate must have entries for each element
+            assert.equal(formComplex._elementsToValidate[0].id, "text1", 'text1 not present in _elementsToValidate');
+            assert.equal(formComplex._elementsToValidate[1].id, "text2", 'text2 not present in _elementsToValidate');
+            assert.equal(formComplex._elementsToValidate[2].id, "text3", 'text3 not present in _elementsToValidate');
+            assert.equal(formComplex._elementsToValidate[3].id, "text4", 'text4 not present in _elementsToValidate');
+
+            var insertPoint = formComplex.$.insertPoint;
+            assert.equal(Polymer.dom(insertPoint).children.length, 5, 'insert point doesn\'t contain corrent number of elements');
+          }
 
           flush(function() {
             assert.equal(eventCount, 1, 'at-form-array didn\'t fire corrent number of events');
@@ -408,59 +658,62 @@
 
       suite('schema is valid, data is valid, data first schema second', function() {
 
-        var schema = {
-          properties: {
-            text1: {
-              type: "string"
-            },
-            text2: {
-              type: "string"
-            },
-            text3: {
-              type: "string",
-              "default": "text3 lorem ipsum"
-            },
-            text4: {
-              type: "string",
-              "default": "text4 lorem ipsum"
-            }
-          }
-        };
-
         function getSchema() {
           return {
-            properties: {
-              text1: {
-                type: "string"
-              },
-              text2: {
-                type: "string"
-              },
-              text3: {
-                type: "string",
-                "default": "text3 lorem ipsum"
-              },
-              text4: {
-                type: "string",
-                "default": "text4 lorem ipsum"
+            items: {
+              properties: {
+                text1: {
+                  type: "string"
+                },
+                text2: {
+                  type: "string"
+                },
+                text3: {
+                  type: "string",
+                  "default": "text3 lorem ipsum"
+                },
+                text4: {
+                  type: "string",
+                  "default": "text4 lorem ipsum"
+                }
               }
             }
-          };
+          }
         }
 
-        var stringSchema = JSON.stringify(schema);
+        var stringSchema = JSON.stringify(getSchema());
 
         function getData() {
-          return {
-            text1: "text1 lorem ipsum",
-            text2: "text2 lorem ipsum"
-          };
+          return [
+            {
+
+            },
+            {
+              text1: "",
+              text2: "",
+              text3: "text3 lorem ipsum",
+              text4: "text4 lorem ipsum"
+            },
+            {
+              text1: "text1 lorem ipsum",
+              text2: "text2 lorem ipsum",
+              text3: "",
+              text4: ""
+            },
+            {
+              text1: "text1 lorem ipsum",
+              text2: "text2 lorem ipsum",
+              text3: "text3 ipsum lorem",
+              text4: "text4 ipsum lorem"
+            }
+          ];
         }
 
         var stringData = JSON.stringify(getData());
 
-        test('schema is string, data is string', function(done) {
+        test('schema is string, value is string', function(done) {
           var formArray = document.createElement('at-form-array');
+          var itemsContainer = formArray.$.itemsContainer;
 
           var eventCount = 0;
           formArray.addEventListener('value-changed', function(event) {
@@ -469,45 +722,72 @@
 
           formArray.value = stringData;
 
-          // internalData must have entries for each element
-          assert.isObject(formArray._internalData, 'internal data is not set');
-          assert.equal(Object.keys(formArray._internalData).length, 2, '_internalData doesn\'t contain correct number of properties');
-          assert.equal(formArray._internalData.text1, "text1 lorem ipsum", 'text1 value not correct in _internalData');
-          assert.equal(formArray._internalData.text2, "text2 lorem ipsum", 'text2 value not correct in _internalData');
-          assert.equal(formArray.value.text1, "text1 lorem ipsum", 'text1 value not correct in _internalData');
-          assert.equal(formArray.value.text2, "text2 lorem ipsum", 'text2 value not correct in _internalData');
-
-          assert.isArray(formArray._elementsToValidate, 'elements to validate is not set');
-          assert.equal(formArray._elementsToValidate.length, 0, 'elements to validate doesn\'t contain corrent number of elements');
-
-          var insertPoint = formArray.$.insertPoint;
-          assert.equal(Polymer.dom(insertPoint).children.length, 1, 'insert point doesn\'t contain corrent number of elements');
-
+          var initialSchema = formArray.properties.schema.value();
+          assert.equal(schemaHelpers.areEqual(formArray.schema, initialSchema), true, 'schema not set correctly');
+          assert.equal(schemaHelpers.areEqual(formArray.value, getData()), true, 'value not set correctly');
+          assert.equal(Polymer.dom(itemsContainer).children.length, 4, 'items container should not have elements');
 
           formArray.schema = stringSchema;
 
-          assert.isObject(formArray._internalData, 'internal data is not set');
-          assert.equal(Object.keys(formArray._internalData).length, 4, '_internalData doesn\'t contain correct number of properties');
-          assert.equal(formArray._internalData.text1, "text1 lorem ipsum", 'text1 value not correct in _internalData');
-          assert.equal(formArray._internalData.text2, "text2 lorem ipsum", 'text2 value not correct in _internalData');
-          assert.equal(formArray._internalData.text3, "text3 lorem ipsum", 'text3 value not correct in _internalData');
-          assert.equal(formArray._internalData.text4, "text4 lorem ipsum", 'text4 value not correct in _internalData');
+          assert.equal(schemaHelpers.areEqual(formArray.schema, getSchema()), true, 'schema not set correctly');
+          assert.equal(schemaHelpers.areEqual(formArray.value, getData()), true, 'value not set correctly');
+          assert.equal(Polymer.dom(itemsContainer).children.length, 4, 'items container should not have elements');
 
-          assert.equal(formArray.value.text1, "text1 lorem ipsum", 'text1 value not correct in data');
-          assert.equal(formArray.value.text2, "text2 lorem ipsum", 'text2 value not correct in data');
-          assert.equal(formArray.value.text3, "text3 lorem ipsum", 'text3 value not correct in data');
-          assert.equal(formArray.value.text4, "text4 lorem ipsum", 'text4 value not correct in data');
+          var expectedValues = [
+            {
+              text1: "",
+              text2: "",
+              text3: "text3 lorem ipsum",
+              text4: "text4 lorem ipsum"
+            },
+            {
+              text1: "",
+              text2: "",
+              text3: "text3 lorem ipsum",
+              text4: "text4 lorem ipsum"
+            },
+            {
+              text1: "text1 lorem ipsum",
+              text2: "text2 lorem ipsum",
+              text3: "",
+              text4: ""
+            },
+            {
+              text1: "text1 lorem ipsum",
+              text2: "text2 lorem ipsum",
+              text3: "text3 ipsum lorem",
+              text4: "text4 ipsum lorem"
+            }
+          ];
 
-          assert.isArray(formArray._elementsToValidate, 'elements to validate is not set');
-          assert.equal(formArray._elementsToValidate.length, 4, 'elements to validate doesn\'t contain corrent number of elements');
-          // _elementsToValidate must have entries for each element
-          assert.equal(formArray._elementsToValidate[0].id, "text1", 'text1 not present in _elementsToValidate');
-          assert.equal(formArray._elementsToValidate[1].id, "text2", 'text2 not present in _elementsToValidate');
-          assert.equal(formArray._elementsToValidate[2].id, "text3", 'text3 not present in _elementsToValidate');
-          assert.equal(formArray._elementsToValidate[3].id, "text4", 'text4 not present in _elementsToValidate');
+          for (var i = 0; i < formArray.value.length; i++) {
+            var formComplex = formArray._getElementFromForm(i);
+            var expectedValue = expectedValues[i];
 
-          var insertPoint = formArray.$.insertPoint;
-          assert.equal(Polymer.dom(insertPoint).children.length, 5, 'insert point doesn\'t contain corrent number of elements');
+            // internalData must have entries for each element
+            assert.isObject(formComplex._internalData, 'internal data is not set');
+            assert.equal(Object.keys(formComplex._internalData).length, 4, '_internalData doesn\'t contain correct number of properties');
+            assert.equal(formComplex._internalData.text1, expectedValue.text1, 'text1 value not correct in _internalData');
+            assert.equal(formComplex._internalData.text2, expectedValue.text2, 'text2 value not correct in _internalData');
+            assert.equal(formComplex._internalData.text3, expectedValue.text3, 'text3 value not correct in _internalData');
+            assert.equal(formComplex._internalData.text4, expectedValue.text4, 'text4 value not correct in _internalData');
+
+            assert.equal(formComplex.value.text1, expectedValue.text1, 'text1 value not correct in data');
+            assert.equal(formComplex.value.text2, expectedValue.text2, 'text2 value not correct in data');
+            assert.equal(formComplex.value.text3, expectedValue.text3, 'text3 value not correct in data');
+            assert.equal(formComplex.value.text4, expectedValue.text4, 'text4 value not correct in data');
+
+            assert.isArray(formComplex._elementsToValidate, 'elements to validate is not set');
+            assert.equal(formComplex._elementsToValidate.length, 4, 'elements to validate doesn\'t contain corrent number of elements');
+            // _elementsToValidate must have entries for each element
+            assert.equal(formComplex._elementsToValidate[0].id, "text1", 'text1 not present in _elementsToValidate');
+            assert.equal(formComplex._elementsToValidate[1].id, "text2", 'text2 not present in _elementsToValidate');
+            assert.equal(formComplex._elementsToValidate[2].id, "text3", 'text3 not present in _elementsToValidate');
+            assert.equal(formComplex._elementsToValidate[3].id, "text4", 'text4 not present in _elementsToValidate');
+
+            var insertPoint = formComplex.$.insertPoint;
+            assert.equal(Polymer.dom(insertPoint).children.length, 5, 'insert point doesn\'t contain corrent number of elements');
+          }
 
           flush(function() {
             assert.equal(eventCount, 1, 'at-form-array didn\'t fire corrent number of events');
@@ -517,6 +797,7 @@
 
         test('schema is string, data is object', function(done) {
           var formArray = document.createElement('at-form-array');
+          var itemsContainer = formArray.$.itemsContainer;
 
           var eventCount = 0;
           formArray.addEventListener('value-changed', function(event) {
@@ -525,45 +806,72 @@
 
           formArray.value = getData();
 
-          // internalData must have entries for each element
-          assert.isObject(formArray._internalData, 'internal data is not set');
-          assert.equal(Object.keys(formArray._internalData).length, 2, '_internalData doesn\'t contain correct number of properties');
-          assert.equal(formArray._internalData.text1, "text1 lorem ipsum", 'text1 value not correct in _internalData');
-          assert.equal(formArray._internalData.text2, "text2 lorem ipsum", 'text2 value not correct in _internalData');
-          assert.equal(formArray.value.text1, "text1 lorem ipsum", 'text1 value not correct in data');
-          assert.equal(formArray.value.text2, "text2 lorem ipsum", 'text2 value not correct in data');
-
-          assert.isArray(formArray._elementsToValidate, 'elements to validate is not set');
-          assert.equal(formArray._elementsToValidate.length, 0, 'elements to validate doesn\'t contain corrent number of elements');
-
-          var insertPoint = formArray.$.insertPoint;
-          assert.equal(Polymer.dom(insertPoint).children.length, 1, 'insert point doesn\'t contain corrent number of elements');
-
+          var initialSchema = formArray.properties.schema.value();
+          assert.equal(schemaHelpers.areEqual(formArray.schema, initialSchema), true, 'schema not set correctly');
+          assert.equal(schemaHelpers.areEqual(formArray.value, getData()), true, 'value not set correctly');
+          assert.equal(Polymer.dom(itemsContainer).children.length, 4, 'items container should not have elements');
 
           formArray.schema = stringSchema;
 
-          assert.isObject(formArray._internalData, 'internal data is not set');
-          assert.equal(Object.keys(formArray._internalData).length, 4, '_internalData doesn\'t contain correct number of properties');
-          assert.equal(formArray._internalData.text1, "text1 lorem ipsum", 'text1 value not correct in _internalData');
-          assert.equal(formArray._internalData.text2, "text2 lorem ipsum", 'text2 value not correct in _internalData');
-          assert.equal(formArray._internalData.text3, "text3 lorem ipsum", 'text3 value not correct in _internalData');
-          assert.equal(formArray._internalData.text4, "text4 lorem ipsum", 'text4 value not correct in _internalData');
+          assert.equal(schemaHelpers.areEqual(formArray.schema, getSchema()), true, 'schema not set correctly');
+          assert.equal(schemaHelpers.areEqual(formArray.value, getData()), true, 'value not set correctly');
+          assert.equal(Polymer.dom(itemsContainer).children.length, 4, 'items container should not have elements');
 
-          assert.equal(formArray.value.text1, "text1 lorem ipsum", 'text1 value not correct in data');
-          assert.equal(formArray.value.text2, "text2 lorem ipsum", 'text2 value not correct in data');
-          assert.equal(formArray.value.text3, "text3 lorem ipsum", 'text3 value not correct in data');
-          assert.equal(formArray.value.text4, "text4 lorem ipsum", 'text4 value not correct in data');
+          var expectedValues = [
+            {
+              text1: "",
+              text2: "",
+              text3: "text3 lorem ipsum",
+              text4: "text4 lorem ipsum"
+            },
+            {
+              text1: "",
+              text2: "",
+              text3: "text3 lorem ipsum",
+              text4: "text4 lorem ipsum"
+            },
+            {
+              text1: "text1 lorem ipsum",
+              text2: "text2 lorem ipsum",
+              text3: "",
+              text4: ""
+            },
+            {
+              text1: "text1 lorem ipsum",
+              text2: "text2 lorem ipsum",
+              text3: "text3 ipsum lorem",
+              text4: "text4 ipsum lorem"
+            }
+          ];
 
-          assert.isArray(formArray._elementsToValidate, 'elements to validate is not set');
-          assert.equal(formArray._elementsToValidate.length, 4, 'elements to validate doesn\'t contain corrent number of elements');
-          // _elementsToValidate must have entries for each element
-          assert.equal(formArray._elementsToValidate[0].id, "text1", 'text1 not present in _elementsToValidate');
-          assert.equal(formArray._elementsToValidate[1].id, "text2", 'text2 not present in _elementsToValidate');
-          assert.equal(formArray._elementsToValidate[2].id, "text3", 'text3 not present in _elementsToValidate');
-          assert.equal(formArray._elementsToValidate[3].id, "text4", 'text4 not present in _elementsToValidate');
+          for (var i = 0; i < formArray.value.length; i++) {
+            var formComplex = formArray._getElementFromForm(i);
+            var expectedValue = expectedValues[i];
 
-          var insertPoint = formArray.$.insertPoint;
-          assert.equal(Polymer.dom(insertPoint).children.length, 5, 'insert point doesn\'t contain corrent number of elements');
+            // internalData must have entries for each element
+            assert.isObject(formComplex._internalData, 'internal data is not set');
+            assert.equal(Object.keys(formComplex._internalData).length, 4, '_internalData doesn\'t contain correct number of properties');
+            assert.equal(formComplex._internalData.text1, expectedValue.text1, 'text1 value not correct in _internalData');
+            assert.equal(formComplex._internalData.text2, expectedValue.text2, 'text2 value not correct in _internalData');
+            assert.equal(formComplex._internalData.text3, expectedValue.text3, 'text3 value not correct in _internalData');
+            assert.equal(formComplex._internalData.text4, expectedValue.text4, 'text4 value not correct in _internalData');
+
+            assert.equal(formComplex.value.text1, expectedValue.text1, 'text1 value not correct in data');
+            assert.equal(formComplex.value.text2, expectedValue.text2, 'text2 value not correct in data');
+            assert.equal(formComplex.value.text3, expectedValue.text3, 'text3 value not correct in data');
+            assert.equal(formComplex.value.text4, expectedValue.text4, 'text4 value not correct in data');
+
+            assert.isArray(formComplex._elementsToValidate, 'elements to validate is not set');
+            assert.equal(formComplex._elementsToValidate.length, 4, 'elements to validate doesn\'t contain corrent number of elements');
+            // _elementsToValidate must have entries for each element
+            assert.equal(formComplex._elementsToValidate[0].id, "text1", 'text1 not present in _elementsToValidate');
+            assert.equal(formComplex._elementsToValidate[1].id, "text2", 'text2 not present in _elementsToValidate');
+            assert.equal(formComplex._elementsToValidate[2].id, "text3", 'text3 not present in _elementsToValidate');
+            assert.equal(formComplex._elementsToValidate[3].id, "text4", 'text4 not present in _elementsToValidate');
+
+            var insertPoint = formComplex.$.insertPoint;
+            assert.equal(Polymer.dom(insertPoint).children.length, 5, 'insert point doesn\'t contain corrent number of elements');
+          }
 
           flush(function() {
             assert.equal(eventCount, 1, 'at-form-array didn\'t fire corrent number of events');
@@ -573,6 +881,7 @@
 
         test('schema is object, data is string', function(done) {
           var formArray = document.createElement('at-form-array');
+          var itemsContainer = formArray.$.itemsContainer;
 
           var eventCount = 0;
           formArray.addEventListener('value-changed', function(event) {
@@ -581,44 +890,72 @@
 
           formArray.value = stringData;
 
-          // internalData must have entries for each element
-          assert.isObject(formArray._internalData, 'internal data is not set');
-          assert.equal(Object.keys(formArray._internalData).length, 2, '_internalData doesn\'t contain correct number of properties');
-          assert.equal(formArray._internalData.text1, "text1 lorem ipsum", 'text1 value not correct in _internalData');
-          assert.equal(formArray._internalData.text2, "text2 lorem ipsum", 'text2 value not correct in _internalData');
-          assert.equal(formArray.value.text1, "text1 lorem ipsum", 'text1 value not correct in data');
-          assert.equal(formArray.value.text2, "text2 lorem ipsum", 'text2 value not correct in data');
+          var initialSchema = formArray.properties.schema.value();
+          assert.equal(schemaHelpers.areEqual(formArray.schema, initialSchema), true, 'schema not set correctly');
+          assert.equal(schemaHelpers.areEqual(formArray.value, getData()), true, 'value not set correctly');
+          assert.equal(Polymer.dom(itemsContainer).children.length, 4, 'items container should not have elements');
 
-          assert.isArray(formArray._elementsToValidate, 'elements to validate is not set');
-          assert.equal(formArray._elementsToValidate.length, 0, 'elements to validate doesn\'t contain corrent number of elements');
+          formArray.schema = getSchema();
 
-          var insertPoint = formArray.$.insertPoint;
-          assert.equal(Polymer.dom(insertPoint).children.length, 1, 'insert point doesn\'t contain corrent number of elements');
+          assert.equal(schemaHelpers.areEqual(formArray.schema, getSchema()), true, 'schema not set correctly');
+          assert.equal(schemaHelpers.areEqual(formArray.value, getData()), true, 'value not set correctly');
+          assert.equal(Polymer.dom(itemsContainer).children.length, 4, 'items container should not have elements');
 
-          formArray.schema = schema;
+          var expectedValues = [
+            {
+              text1: "",
+              text2: "",
+              text3: "text3 lorem ipsum",
+              text4: "text4 lorem ipsum"
+            },
+            {
+              text1: "",
+              text2: "",
+              text3: "text3 lorem ipsum",
+              text4: "text4 lorem ipsum"
+            },
+            {
+              text1: "text1 lorem ipsum",
+              text2: "text2 lorem ipsum",
+              text3: "",
+              text4: ""
+            },
+            {
+              text1: "text1 lorem ipsum",
+              text2: "text2 lorem ipsum",
+              text3: "text3 ipsum lorem",
+              text4: "text4 ipsum lorem"
+            }
+          ];
 
-          assert.isObject(formArray._internalData, 'internal data is not set');
-          assert.equal(Object.keys(formArray._internalData).length, 4, '_internalData doesn\'t contain correct number of properties');
-          assert.equal(formArray._internalData.text1, "text1 lorem ipsum", 'text1 value not correct in _internalData');
-          assert.equal(formArray._internalData.text2, "text2 lorem ipsum", 'text2 value not correct in _internalData');
-          assert.equal(formArray._internalData.text3, "text3 lorem ipsum", 'text3 value not correct in _internalData');
-          assert.equal(formArray._internalData.text4, "text4 lorem ipsum", 'text4 value not correct in _internalData');
+          for (var i = 0; i < formArray.value.length; i++) {
+            var formComplex = formArray._getElementFromForm(i);
+            var expectedValue = expectedValues[i];
 
-          assert.equal(formArray.value.text1, "text1 lorem ipsum", 'text1 value not correct in data');
-          assert.equal(formArray.value.text2, "text2 lorem ipsum", 'text2 value not correct in data');
-          assert.equal(formArray.value.text3, "text3 lorem ipsum", 'text3 value not correct in data');
-          assert.equal(formArray.value.text4, "text4 lorem ipsum", 'text4 value not correct in data');
+            // internalData must have entries for each element
+            assert.isObject(formComplex._internalData, 'internal data is not set');
+            assert.equal(Object.keys(formComplex._internalData).length, 4, '_internalData doesn\'t contain correct number of properties');
+            assert.equal(formComplex._internalData.text1, expectedValue.text1, 'text1 value not correct in _internalData');
+            assert.equal(formComplex._internalData.text2, expectedValue.text2, 'text2 value not correct in _internalData');
+            assert.equal(formComplex._internalData.text3, expectedValue.text3, 'text3 value not correct in _internalData');
+            assert.equal(formComplex._internalData.text4, expectedValue.text4, 'text4 value not correct in _internalData');
 
-          assert.isArray(formArray._elementsToValidate, 'elements to validate is not set');
-          assert.equal(formArray._elementsToValidate.length, 4, 'elements to validate doesn\'t contain corrent number of elements');
-          // _elementsToValidate must have entries for each element
-          assert.equal(formArray._elementsToValidate[0].id, "text1", 'text1 not present in _elementsToValidate');
-          assert.equal(formArray._elementsToValidate[1].id, "text2", 'text2 not present in _elementsToValidate');
-          assert.equal(formArray._elementsToValidate[2].id, "text3", 'text3 not present in _elementsToValidate');
-          assert.equal(formArray._elementsToValidate[3].id, "text4", 'text4 not present in _elementsToValidate');
+            assert.equal(formComplex.value.text1, expectedValue.text1, 'text1 value not correct in data');
+            assert.equal(formComplex.value.text2, expectedValue.text2, 'text2 value not correct in data');
+            assert.equal(formComplex.value.text3, expectedValue.text3, 'text3 value not correct in data');
+            assert.equal(formComplex.value.text4, expectedValue.text4, 'text4 value not correct in data');
 
-          var insertPoint = formArray.$.insertPoint;
-          assert.equal(Polymer.dom(insertPoint).children.length, 5, 'insert point doesn\'t contain corrent number of elements');
+            assert.isArray(formComplex._elementsToValidate, 'elements to validate is not set');
+            assert.equal(formComplex._elementsToValidate.length, 4, 'elements to validate doesn\'t contain corrent number of elements');
+            // _elementsToValidate must have entries for each element
+            assert.equal(formComplex._elementsToValidate[0].id, "text1", 'text1 not present in _elementsToValidate');
+            assert.equal(formComplex._elementsToValidate[1].id, "text2", 'text2 not present in _elementsToValidate');
+            assert.equal(formComplex._elementsToValidate[2].id, "text3", 'text3 not present in _elementsToValidate');
+            assert.equal(formComplex._elementsToValidate[3].id, "text4", 'text4 not present in _elementsToValidate');
+
+            var insertPoint = formComplex.$.insertPoint;
+            assert.equal(Polymer.dom(insertPoint).children.length, 5, 'insert point doesn\'t contain corrent number of elements');
+          }
 
           flush(function() {
             assert.equal(eventCount, 1, 'at-form-array didn\'t fire corrent number of events');
@@ -628,52 +965,81 @@
 
         test('schema is object, data is object', function(done) {
           var formArray = document.createElement('at-form-array');
+          var itemsContainer = formArray.$.itemsContainer;
 
           var eventCount = 0;
           formArray.addEventListener('value-changed', function(event) {
             eventCount += 1;
           });
+
           formArray.value = getData();
 
-          // internalData must have entries for each element
-          assert.isObject(formArray._internalData, 'internal data is not set');
-          assert.equal(Object.keys(formArray._internalData).length, 2, '_internalData doesn\'t contain correct number of properties');
-          assert.equal(formArray._internalData.text1, "text1 lorem ipsum", 'text1 value not correct in _internalData');
-          assert.equal(formArray._internalData.text2, "text2 lorem ipsum", 'text2 value not correct in _internalData');
-          assert.equal(formArray.value.text1, "text1 lorem ipsum", 'text1 value not correct in data');
-          assert.equal(formArray.value.text2, "text2 lorem ipsum", 'text2 value not correct in data');
+          var initialSchema = formArray.properties.schema.value();
+          assert.equal(schemaHelpers.areEqual(formArray.schema, initialSchema), true, 'schema not set correctly');
+          assert.equal(schemaHelpers.areEqual(formArray.value, getData()), true, 'value not set correctly');
+          assert.equal(Polymer.dom(itemsContainer).children.length, 4, 'items container should not have elements');
 
-          assert.isArray(formArray._elementsToValidate, 'elements to validate is not set');
-          assert.equal(formArray._elementsToValidate.length, 0, 'elements to validate doesn\'t contain corrent number of elements');
+          formArray.schema = getSchema();
 
-          var insertPoint = formArray.$.insertPoint;
-          assert.equal(Polymer.dom(insertPoint).children.length, 1, 'insert point doesn\'t contain corrent number of elements');
+          assert.equal(schemaHelpers.areEqual(formArray.schema, getSchema()), true, 'schema not set correctly');
+          assert.equal(schemaHelpers.areEqual(formArray.value, getData()), true, 'value not set correctly');
+          assert.equal(Polymer.dom(itemsContainer).children.length, 4, 'items container should not have elements');
 
+          var expectedValues = [
+            {
+              text1: "",
+              text2: "",
+              text3: "text3 lorem ipsum",
+              text4: "text4 lorem ipsum"
+            },
+            {
+              text1: "",
+              text2: "",
+              text3: "text3 lorem ipsum",
+              text4: "text4 lorem ipsum"
+            },
+            {
+              text1: "text1 lorem ipsum",
+              text2: "text2 lorem ipsum",
+              text3: "",
+              text4: ""
+            },
+            {
+              text1: "text1 lorem ipsum",
+              text2: "text2 lorem ipsum",
+              text3: "text3 ipsum lorem",
+              text4: "text4 ipsum lorem"
+            }
+          ];
 
-          formArray.schema = schema;
+          for (var i = 0; i < formArray.value.length; i++) {
+            var formComplex = formArray._getElementFromForm(i);
+            var expectedValue = expectedValues[i];
 
-          assert.isObject(formArray._internalData, 'internal data is not set');
-          assert.equal(Object.keys(formArray._internalData).length, 4, '_internalData doesn\'t contain correct number of properties');
-          assert.equal(formArray._internalData.text1, "text1 lorem ipsum", 'text1 value not correct in _internalData');
-          assert.equal(formArray._internalData.text2, "text2 lorem ipsum", 'text2 value not correct in _internalData');
-          assert.equal(formArray._internalData.text3, "text3 lorem ipsum", 'text3 value not correct in _internalData');
-          assert.equal(formArray._internalData.text4, "text4 lorem ipsum", 'text4 value not correct in _internalData');
+            // internalData must have entries for each element
+            assert.isObject(formComplex._internalData, 'internal data is not set');
+            assert.equal(Object.keys(formComplex._internalData).length, 4, '_internalData doesn\'t contain correct number of properties');
+            assert.equal(formComplex._internalData.text1, expectedValue.text1, 'text1 value not correct in _internalData');
+            assert.equal(formComplex._internalData.text2, expectedValue.text2, 'text2 value not correct in _internalData');
+            assert.equal(formComplex._internalData.text3, expectedValue.text3, 'text3 value not correct in _internalData');
+            assert.equal(formComplex._internalData.text4, expectedValue.text4, 'text4 value not correct in _internalData');
 
-          assert.equal(formArray.value.text1, "text1 lorem ipsum", 'text1 value not correct in data');
-          assert.equal(formArray.value.text2, "text2 lorem ipsum", 'text2 value not correct in data');
-          assert.equal(formArray.value.text3, "text3 lorem ipsum", 'text3 value not correct in data');
-          assert.equal(formArray.value.text4, "text4 lorem ipsum", 'text4 value not correct in data');
+            assert.equal(formComplex.value.text1, expectedValue.text1, 'text1 value not correct in data');
+            assert.equal(formComplex.value.text2, expectedValue.text2, 'text2 value not correct in data');
+            assert.equal(formComplex.value.text3, expectedValue.text3, 'text3 value not correct in data');
+            assert.equal(formComplex.value.text4, expectedValue.text4, 'text4 value not correct in data');
 
-          assert.isArray(formArray._elementsToValidate, 'elements to validate is not set');
-          assert.equal(formArray._elementsToValidate.length, 4, 'elements to validate doesn\'t contain corrent number of elements');
-          // _elementsToValidate must have entries for each element
-          assert.equal(formArray._elementsToValidate[0].id, "text1", 'text1 not present in _elementsToValidate');
-          assert.equal(formArray._elementsToValidate[1].id, "text2", 'text2 not present in _elementsToValidate');
-          assert.equal(formArray._elementsToValidate[2].id, "text3", 'text3 not present in _elementsToValidate');
-          assert.equal(formArray._elementsToValidate[3].id, "text4", 'text4 not present in _elementsToValidate');
+            assert.isArray(formComplex._elementsToValidate, 'elements to validate is not set');
+            assert.equal(formComplex._elementsToValidate.length, 4, 'elements to validate doesn\'t contain corrent number of elements');
+            // _elementsToValidate must have entries for each element
+            assert.equal(formComplex._elementsToValidate[0].id, "text1", 'text1 not present in _elementsToValidate');
+            assert.equal(formComplex._elementsToValidate[1].id, "text2", 'text2 not present in _elementsToValidate');
+            assert.equal(formComplex._elementsToValidate[2].id, "text3", 'text3 not present in _elementsToValidate');
+            assert.equal(formComplex._elementsToValidate[3].id, "text4", 'text4 not present in _elementsToValidate');
 
-          var insertPoint = formArray.$.insertPoint;
-          assert.equal(Polymer.dom(insertPoint).children.length, 5, 'insert point doesn\'t contain corrent number of elements');
+            var insertPoint = formComplex.$.insertPoint;
+            assert.equal(Polymer.dom(insertPoint).children.length, 5, 'insert point doesn\'t contain corrent number of elements');
+          }
 
           flush(function() {
             assert.equal(eventCount, 1, 'at-form-array didn\'t fire corrent number of events');

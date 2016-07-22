@@ -415,20 +415,47 @@
 
         var properties = this._getSchemaProperties(newValue);
 
-        if (!schemaHelpers.isObject(properties)) {
-          Polymer.dom(this.$.schemaNotAssigned).classList.add('hidden');
-          Polymer.dom(this.$.schemaAssigned).classList.remove('hidden');
+        var propertiesIsObject = schemaHelpers.isObject(properties);
+        this.toggleClass('hidden', propertiesIsObject, this.$.schemaNotAssigned);
+        this.toggleClass('hidden', !propertiesIsObject, this.$.schemaAssigned);
 
+        if (propertiesIsObject) {
           this._updateHeader();
         }
+
+        // on schema changed items from previous schema should be removed
+        var itemsContainer = this.$.itemsContainer;
+        while(Polymer.dom(itemsContainer).firstChild) {
+          Polymer.dom(itemsContainer).removeChild(Polymer.dom(itemsContainer).firstChild);
+        }
+        // also properties in value from previous schema should be deleted
+        if (schemaHelpers.isString(oldValue)) {
+          try {
+            oldValue = JSON.parse(oldValue);
+
+          } catch (e) {
+            console.log(e);
+          }
+        }
+
+        if (schemaHelpers.isObject(oldValue) && !schemaHelpers.areEqual(newValue, oldValue)) {
+          var oldProperties = this._getSchemaProperties(oldValue);
+          if (schemaHelpers.isObject(oldProperties)) {
+            var oldPropertiesKeys = Object.keys(oldProperties);
+            for (var i = 0; i < this.value.length; i++) {
+              var current = this.value[i];
+              oldPropertiesKeys.forEach(function (oldPropertyName, index) {
+                delete current[oldPropertyName];
+              });
+            }
+          }
+        }
+
+        this._valueChanged(this.value, this.value);
       },
 
       _valueChanged: function(newValue, oldValue) {
-        if (schemaHelpers.areEqual(newValue, oldValue)) {
-          return;
-        }
-
-        if (schemaHelpers.isString(newValue)) {
+        if (schemaHelpers.isString(newValue) && newValue !== "") {
           try {
             var objValue = JSON.parse(newValue);
             this.value = objValue;
@@ -438,10 +465,13 @@
           return;
         }
 
-        if (!this.schema) {
+        if (!schemaHelpers.isArray(newValue)) {
           return;
         }
 
+        if (!this.schema) {
+          return;
+        }
 
         var properties = this._getSchemaProperties(this.schema);
 
@@ -451,6 +481,9 @@
         } else {
           console.log('Can not update value when schema is not assigned');
           return;
+        }
+        if (!schemaHelpers.areEqual(newValue, oldValue)) {
+          this._fire_valueChangedEvent();
         }
       },
 
