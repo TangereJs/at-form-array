@@ -815,13 +815,8 @@
           event.stopPropagation();
           var position = parseInt(_resultHtml.getAttribute('data-position'));
           var value = event.detail.value;
-          // this is here to filter value-changed event from at-form-complex individual elements
-          // for unknown reasons we get value-changed twice here, once for at-form-complex.value-changed and another one for at-form-complex.individualElement.value-changed
-          console.log(event.srcElement.is);
-            // if (event.srcElement.is === "at-form-complex") {
-            // debugger;
+
           self._updateValue(position, value);
-          // }
         });
 
         return resultHtml;
@@ -913,7 +908,10 @@
         // 1. get element by position and property name
         var element = this._getElementFromForm(position);
         if (element) {
+          var previousValue = element.value;
           element.value = value;
+          // since element is at-form-complex we need to call valueChanged explicitely
+          element._valueChanged(value, previousValue);
         }
       },
 
@@ -962,7 +960,7 @@
 
         this.fire('value-changed', {
           value: this.value
-        });
+        }, { bubbles: false });
       },
 
       // *ij* since array.schema can be either { items: { properties: {} } } or { schema: { items: { properties: {} } }, rules: [] }
