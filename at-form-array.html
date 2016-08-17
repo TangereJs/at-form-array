@@ -802,7 +802,7 @@
         var assignValue = {};
         this._cloneObject(Object.keys(item), item, assignValue);
         resultHtml.value = assignValue;
-        resultHtml.clearUIValidState();
+        resultHtml._clearUIValidState();
         Polymer.dom(resultHtml).setAttribute('data-position', position);
         Polymer.dom(resultHtml).classList.add('item');
         Polymer.dom(resultHtml).classList.add(self.layout);
