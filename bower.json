@@ -13,7 +13,8 @@
     "at-carbon-icon-button": "TangereJs/at-carbon-icon-button#0.8-preview",
     "layout": "Polymer/layout#0.8-preview",
     "at-form-checkbox": "TangereJs/at-form-checkbox#0.8-preview",
-    "at-form-codemirror": "TangereJs/at-form-codemirror#0.8-preview"
+    "at-form-codemirror": "TangereJs/at-form-codemirror#0.8-preview",
+    "at-form-behaviors": "TangereJs/at-form-behaviors#0.8-preview"
   },
-  "version": "0.0.1.6"
+  "version": "0.0.1.7"
 }

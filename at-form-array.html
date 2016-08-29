@@ -6,6 +6,7 @@
 <link rel="import" href="../at-form-complex/at-form-complex.html">
 <link rel="import" href="../at-i18n/at-i18n-behavior.html">
 <link rel="import" href="../at-carbon-icon-button/at-carbon-icon-button.html">
+<link rel="import" href="../at-form-behaviors/at-form-behaviors.html">
 
 <dom-module id="at-form-array">
   <template>
@@ -73,7 +74,7 @@
     'use strict';
     Polymer({
       is: 'at-form-array',
-      behaviors: [ Tangere.behaviors.i18n ],
+      behaviors: [ Tangere.behaviors.i18n, Tangere.behaviors.formUIGeneric ],
       properties: {
         /**
          * Textual label for the element
@@ -111,18 +112,6 @@
           title: 'Field value can not be changed'
         },
         /**
-         * When true array must have at least one item
-         * @property required
-         * @type Boolean
-         * @default false
-         */
-        required: {
-          type: Boolean,
-          value: false,
-          observer: '_requiredChanged',
-          title: 'Input required'
-        },
-        /**
          * Hides the element. When hidden nothing is displayed for the element
          * @property hide
          * @type Boolean
@@ -135,29 +124,17 @@
           title: 'Filed is  invisible'
         },
         /**
-        * External error message for the element
-        * @property errorMessage
-        * @type String
-        * @default ""
-        */
-        errorMessage: {
-          type: String,
-          value: '',
-          observer: '_errorMessageChanged',
-          title: 'Error message'
-        },
-        /**
-         * Valid state of the element. When each item in the array is valid array is valid. If at least one item in the the array is invalid, array is invalid
-         * @property valid
+         * When true array must have at least one item
+         * @property required
          * @type Boolean
-         * @default true
+         * @default false
          */
-        valid: {
+        required: {
           type: Boolean,
-          value: true,
-          notify: true,
-          readOnly: true
+          value: false,
+          title: 'Input required'
         },
+
         /**
          * Specification of elements that should appear on the element.<br/>
          * Provide either an object or string.<br/>
@@ -221,6 +198,11 @@
         type: 'array',
         title: 'Array'
       }],
+
+      observers: [
+        '_internalValidStateUpdate(disabled, hide, required)'
+      ],
+
       // ------------------------------------------------------------
       // unsupported types
       // list type or xtype of the element that should not be supported by at-form-array
@@ -229,6 +211,17 @@
 
       _hideLabelChanged: function(newValue, oldValue) {
         this.toggleClass("hidden", newValue, this.$.label);
+      },
+
+      ready: function() {
+        var self = this;
+        this.$.addItemBtn.addEventListener('tap', function(event) {
+          event.stopPropagation();
+          self._addNewItem();
+        });
+        this.toggleClass('hidden', this.layout === 'vertical', this.$.headerWrapper);
+        this._isReady = true;
+        this._internalValidStateUpdate(this.disabled, this.hide, this.required);
       },
 
       _disabledChanged: function(newValue, oldValue) {
@@ -262,96 +255,62 @@
             button.removeAttribute('disabled');
           }
         }
-        this._updateUIValidState();
-      },
-
-      _requiredChanged: function(newValue, oldValue) {
-        this._updateUIValidState();
       },
 
       _hideChanged: function(newValue, oldValue) {
         var container = this.$.atContainer;
         this.toggleClass('hidden', newValue, container);
-        this._updateUIValidState();
       },
 
-      _errorMessageChanged: function(newValue, oldValue) {
-        this._updateUIValidState();
-      },
-
-      set valid(newValue) {},
-
-      _validateSelf: function() {
-        var valid = this.hide || this.disabled;
-        var isExternalValid = this.errorMessage == null || this.errorMessage === "";
-        if (!valid) {
-          valid = !this.required || (this.required && this.value.length > 0);
-        }
-
-        valid = this.hide || this.disabled || (valid && isExternalValid);
-
-        var hint = this.$.hint;
-        if (hint) {
-          if (this.hide || this.disabled) {
-            Polymer.dom(hint).innerHTML = '';
-          } else if (!isExternalValid) {
-            Polymer.dom(hint).innerHTML = this.errorMessage;
-          } else if (!valid) {
-            Polymer.dom(hint).innerHTML = this.T('This field is required.');
-          } else {
-            Polymer.dom(hint).innerHTML = '';
-          }
-        }
-
-        // update valid UI
-        var label = this.$.label;
-        this.toggleClass('error', !valid, label);
-        // hint = this.$.hint;
-        this.toggleClass('error', !valid, hint);
-        return valid;
-      },
-
-      _updateUIValidState: function() {
+      _internalValidStateUpdate: function(disabled, hide, required) {
         if (!this._isReady) {
           return;
         }
-
-        var valid = this._validateSelf();
-
-        var formComplexElements = this.getElementsByTagName('at-form-complex');
-        var fceLen = formComplexElements.length;
-        for (var i = 0; i < fceLen && valid; i++) {
-          var formComplex = formComplexElements[i];
-          var complexValid = formComplex.valid;
-          valid = valid && complexValid;
-        }
-
-        this._setValid(valid);
+        this.validate(true);
       },
 
-      /// QUICK FIX remove when at-form-array gets validation behavior
-      clearUIValidState: function() {
+      _validateRequired: function() {
+        var validationResult = {
+          isValid: true,
+          errorMessage: ""
+        };
 
+        validationResult.isValid = !this.required || (this.required && this.value.length > 0);
+        if (!validationResult.isValid) {
+          validationResult.errorMessage = this.T('This field is required.');
+        }
+        return validationResult;
       },
 
-      validate: function() {
-        if (!this._isReady) {
-          return;
+      validate: function(showError) {
+
+        showError = showError === undefined ? this.autovalidate : showError;
+
+        var validationResult = this._validateBaseData();
+        if (showError) { this._handleValidationResult(validationResult); }
+        if (validationResult.isFinal) {
+          return validationResult.isValid;
         }
 
-        var valid = this._validateSelf();
+        validationResult = this._validateRequired();
+        if (showError) { this._handleValidationResult(validationResult); }
 
         var formComplexElements = this.getElementsByTagName('at-form-complex');
         var fceLen = formComplexElements.length;
         for (var i = 0; i < fceLen; i++) {
           var formComplex = formComplexElements[i];
-          var complexValid = formComplex.validate();
-          valid = valid && complexValid;
+          var complexValid = formComplex.validate(showError);
+          validationResult.isValid = validationResult.isValid && complexValid;
         }
 
-        this._setValid(valid);
+        return validationResult.isValid;
+      },
 
-        return valid;
+      _updateUIValidState: function (valid) {
+        var label = this.$.label;
+        this.toggleClass('error', !valid, label);
+        var hint = this.$.hint;
+        this.toggleClass('error', !valid, hint);
       },
 
       _layoutChanged: function(newValue, oldValue) {
@@ -477,7 +436,7 @@
 
         if (properties) {
           this._updateItemsContainerHtml();
-          this._updateUIValidState();
+          this.validate(true);
         } else {
           console.log('Can not update value when schema is not assigned');
           return;
@@ -487,15 +446,6 @@
         }
       },
 
-      ready: function() {
-        var self = this;
-        this.$.addItemBtn.addEventListener('tap', function(event) {
-          event.stopPropagation();
-          self._addNewItem();
-        });
-        this.toggleClass('hidden', this.layout === 'vertical', this.$.headerWrapper);
-        this._isReady = true;
-      },
 
       focus: function() {
         var addItemBtn = this.$.addItemBtn;
@@ -956,7 +906,7 @@
       },
 
       _fire_valueChangedEvent: function() {
-        this._updateUIValidState();
+        this.validate(true);
 
         this.fire('value-changed', {
           value: this.value
