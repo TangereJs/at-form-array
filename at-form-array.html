@@ -295,7 +295,7 @@
         validationResult = this._validateRequired();
         if (showError) { this._handleValidationResult(validationResult); }
 
-        var formComplexElements = this.getElementsByTagName('at-form-complex');
+        var formComplexElements = Polymer.dom(this.root).querySelectorAll('at-form-complex');
         var fceLen = formComplexElements.length;
         for (var i = 0; i < fceLen; i++) {
           var formComplex = formComplexElements[i];
@@ -436,13 +436,12 @@
 
         if (properties) {
           this._updateItemsContainerHtml();
-          this.validate(true);
         } else {
           console.log('Can not update value when schema is not assigned');
           return;
         }
         if (!schemaHelpers.areEqual(newValue, oldValue)) {
-          this._fire_valueChangedEvent();
+          this._fireValueChangedEvent(this.value);
         }
       },
 
@@ -471,7 +470,7 @@
           this._updateItemActionButtons(itemContainer, position - 1, position + 1);
         }
 
-        this._fire_valueChangedEvent();
+        this._fireValueChangedEvent(this.value);
       },
 
       _removeItem: function(position) {
@@ -507,7 +506,7 @@
           this._updateItemActionButtons(itemContainer, position - 1, valueLength);
         }
 
-        this._fire_valueChangedEvent();
+        this._fireValueChangedEvent(this.value);
       },
 
       _moveItemUp: function(position) {
@@ -541,7 +540,7 @@
         this._updateItemActionButtons(itemHtmlAtPosition, prev, valueLength);
         this._updateItemActionButtons(itemHtmlAtPrev, position, valueLength);
 
-        this._fire_valueChangedEvent();
+        this._fireValueChangedEvent(this.value);
       },
 
       _moveItemDown: function(position) {
@@ -575,7 +574,7 @@
         this._updateItemActionButtons(itemHtmlAtPosition, next, valueLength);
         this._updateItemActionButtons(itemHtmlAtNext, position, valueLength);
 
-        this._fire_valueChangedEvent();
+        this._fireValueChangedEvent(this.value);
       },
 
       _getPosition: function(button) {
@@ -780,8 +779,10 @@
 
       _updateItemHtml: function(existingItemHtml, item, position) {
         var prevValue = existingItemHtml.value;
-        existingItemHtml.value = item;
-        existingItemHtml._valueChanged(item, prevValue);
+        var assignValue = {};
+        this._cloneObject(Object.keys(item), item, assignValue);
+        existingItemHtml.value = assignValue;
+        existingItemHtml._valueChanged(assignValue, prevValue);
         Polymer.dom(existingItemHtml).setAttribute('data-position', position);
       },
 
@@ -877,7 +878,7 @@
           return;
         }
         this.value[position] = value;
-        this._fire_valueChangedEvent();
+        this._fireValueChangedEvent(this.value);
       },
 
       _cloneArrayValue: function(originalArray) {
@@ -902,15 +903,7 @@
 
       _removeItemValueEntry: function(position) {
         this.splice('value', position, 1);
-        this._fire_valueChangedEvent();
-      },
-
-      _fire_valueChangedEvent: function() {
-        this.validate(true);
-
-        this.fire('value-changed', {
-          value: this.value
-        }, { bubbles: false });
+        this._fireValueChangedEvent(this.value);
       },
 
       // *ij* since array.schema can be either { items: { properties: {} } } or { schema: { items: { properties: {} } }, rules: [] }
