@@ -298,7 +298,7 @@
         element.disabled = true;
         assert.equal(true, element.valid, "form-complex is invalid");
 
-        expectedHintValues = [ "", "", "", "" ];
+        expectedHintValues = [ element.T("This field is required."), element.T("This field is required."), "", "" ];
         expectedValidValues = [ true, true, true, true ];
         // errors are still visible because show errors doesn't hide previous errors
         assertFields(complex, fieldNames, expectedHintValues, expectedValidValues);

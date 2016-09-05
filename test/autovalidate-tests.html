@@ -1,5 +1,6 @@
 <!doctype html>
 <html>
+
 <head>
 
   <title>at-form-array tests</title>
@@ -16,17 +17,18 @@
 
   <link rel="import" href="../at-form-array.html">
 </head>
+
 <body>
 
   <test-fixture id="noAutovalidate">
     <template>
-      <at-form-array></at-form-array>
+      <at-form-array schema='{ "items": { "properties": { "property1": { "type": "string", "required": "true" }, "property2": { "type": "string", "default": "lorem ipsum", "required": true } } } }'></at-form-array>
     </template>
   </test-fixture>
 
   <test-fixture id="autovalidate">
     <template>
-      <at-form-array autovalidate></at-form-array>
+      <at-form-array schema='{ "items": { "properties": { "property1": { "type": "string", "required": "true" }, "property2": { "type": "string", "default": "lorem ipsum", "required": true } } } }' autovalidate></at-form-array>
     </template>
   </test-fixture>
 
@@ -37,111 +39,257 @@
   </test-fixture>
 
   <script>
-
     suite('autovalidate tests', function() {
 
-      suite('autovalidate set as attribute', function () {
+      function getSchema() {
+        return {
+          items: {
+            properties: {
+              property1: {
+                type: "string",
+                required: true
+              },
+              property2: {
+                type: "string",
+                "default": "lorem ipsum",
+                required: true
+              }
+            }
+          }
+        };
+      }
 
-        test('no autovalidate, do not show errors', function () {
+      function assertHintContent(element, expectedHint) {
+        var hint = Polymer.dom(element.$.hint);
+        assert.equal(hint.textContent, expectedHint, 'Error message not set correctly');
+      }
+
+      suite('autovalidate set as attribute', function() {
+
+        test('no autovalidate, do not show errors', function() {
           var element = fixture('noAutovalidate');
           element.required = true;
-          element.value = "";
+          element.value = [{}];
 
           var isValid = element.validate();
-          assert.equal(false, isValid, "element is valid");
+          assert.equal(isValid, false, "element is valid");
+          assertHintContent(element, "");
 
-          var hint = Polymer.dom(element.$.hint);
-          assert.equal(hint.textContent, '', 'Error message not set correctly');
+          var formComplex = element._getElementFromForm(0);
+          assertHintContent(formComplex, "");
+
+          var prop1 = formComplex.getElement('property1');
+          assertHintContent(prop1, "");
+          var prop2 = formComplex.getElement('property2');
+          assertHintContent(prop2, "");
+
+          isValid = element.validate(true);
+          assert.equal(isValid, false, "element is valid");
+          assertHintContent(element, "");
+
+          prop1 = formComplex.getElement('property1');
+          assertHintContent(prop1, element.T("This field is required."));
+          prop2 = formComplex.getElement('property2');
+          assertHintContent(prop2, "");
         });
 
-        test('no autovalidate, do show errors', function () {
+        test('no autovalidate, do show errors', function() {
           var element = fixture('noAutovalidate');
           element.required = true;
-          element.value = "";
+          element.value = [{}];
 
           var isValid = element.validate(true);
-          assert.equal(false, isValid, "element is valid");
+          assert.equal(isValid, false, "element is valid");
+          assertHintContent(element, "");
 
-          var hint = Polymer.dom(element.$.hint);
-          assert.equal(hint.textContent, element.T('This field is required.'), 'Error message not set correctly');
+          var formComplex = element._getElementFromForm(0);
+          assertHintContent(formComplex, "");
+
+          var prop1 = formComplex.getElement('property1');
+          assertHintContent(prop1, element.T("This field is required."));
+          var prop2 = formComplex.getElement('property2');
+          assertHintContent(prop2, "");
+
+          isValid = element.validate();
+          assert.equal(isValid, false, "element is valid");
+          assertHintContent(element, "");
+
+          prop1 = formComplex.getElement('property1');
+          assertHintContent(prop1, element.T("This field is required."));
+          prop2 = formComplex.getElement('property2');
+          assertHintContent(prop2, "");
         });
 
-        test('autovalidate, do not show errors', function () {
+        test('autovalidate, do not show errors', function() {
           var element = fixture('autovalidate');
           element.required = true;
-          element.value = "";
+          element.value = [{}];
 
           var isValid = element.validate();
-          assert.equal(false, isValid, "element is valid");
+          assert.equal(isValid, false, "element is valid");
+          assertHintContent(element, "");
 
-          var hint = Polymer.dom(element.$.hint);
-          assert.equal(hint.textContent, element.T('This field is required.'), 'Error message not set correctly');
+          var formComplex = element._getElementFromForm(0);
+          assertHintContent(formComplex, "");
+
+          var prop1 = formComplex.getElement('property1');
+          assertHintContent(prop1, element.T("This field is required."));
+          var prop2 = formComplex.getElement('property2');
+          assertHintContent(prop2, "");
+
+          isValid = element.validate(false);
+          assert.equal(isValid, false, "element is valid");
+          assertHintContent(element, "");
+
+          prop1 = formComplex.getElement('property1');
+          assertHintContent(prop1, element.T("This field is required."));
+          prop2 = formComplex.getElement('property2');
+          assertHintContent(prop2, "");
         });
 
-        test('autovalidate, do show errors', function () {
+        test('autovalidate, do show errors', function() {
           var element = fixture('autovalidate');
           element.required = true;
-          element.value = "";
+          element.value = [{}];
 
           var isValid = element.validate(true);
-          assert.equal(false, isValid, "element is valid");
+          assert.equal(isValid, false, "element is valid");
+          assertHintContent(element, "");
 
-          var hint = Polymer.dom(element.$.hint);
-          assert.equal(hint.textContent, element.T('This field is required.'), 'Error message not set correctly');
+          var formComplex = element._getElementFromForm(0);
+          assertHintContent(formComplex, "");
+
+          prop1 = formComplex.getElement('property1');
+          assertHintContent(prop1, element.T("This field is required."));
+          prop2 = formComplex.getElement('property2');
+          assertHintContent(prop2, "");
+
+          isValid = element.validate(false);
+          assert.equal(isValid, false, "element is valid");
+          assertHintContent(element, "");
+
+          prop1 = formComplex.getElement('property1');
+          assertHintContent(prop1, element.T("This field is required."));
+          prop2 = formComplex.getElement('property2');
+          assertHintContent(prop2, "");
         });
 
       });
 
-      suite('autovalidate set as property', function () {
+      suite('autovalidate set as property', function() {
 
-        test('no autovalidate, do not show errors', function () {
+        test('no autovalidate, do not show errors', function() {
           var element = fixture('propertyTests');
+          element.schema = getSchema();
           element.required = true;
-          element.value = "";
+          element.value = [{}];
 
           var isValid = element.validate();
-          assert.equal(false, isValid, "element is valid");
+          assert.equal(isValid, false, "element is valid");
+          assertHintContent(element, "");
 
-          var hint = Polymer.dom(element.$.hint);
-          assert.equal(hint.textContent, '', 'Error message not set correctly');
+          var formComplex = element._getElementFromForm(0);
+          assertHintContent(formComplex, "");
+
+          var prop1 = formComplex.getElement('property1');
+          assertHintContent(prop1, "");
+          var prop2 = formComplex.getElement('property2');
+          assertHintContent(prop2, "");
+
+          isValid = element.validate(true);
+          assert.equal(isValid, false, "element is valid");
+          assertHintContent(element, "");
+
+          prop1 = formComplex.getElement('property1');
+          assertHintContent(prop1, element.T("This field is required."));
+          prop2 = formComplex.getElement('property2');
+          assertHintContent(prop2, "");
         });
 
-        test('no autovalidate, do show errors', function () {
+        test('no autovalidate, do show errors', function() {
           var element = fixture('propertyTests');
+          element.schema = getSchema();
           element.required = true;
-          element.value = "";
+          element.value = [{}];
 
           var isValid = element.validate(true);
-          assert.equal(false, isValid, "element is valid");
+          assert.equal(isValid, false, "element is valid");
+          assertHintContent(element, "");
 
-          var hint = Polymer.dom(element.$.hint);
-          assert.equal(hint.textContent, element.T('This field is required.'), 'Error message not set correctly');
+          var formComplex = element._getElementFromForm(0);
+          assertHintContent(formComplex, "");
+
+          var prop1 = formComplex.getElement('property1');
+          assertHintContent(prop1, element.T("This field is required."));
+          var prop2 = formComplex.getElement('property2');
+          assertHintContent(prop2, "");
+
+          isValid = element.validate();
+          assert.equal(isValid, false, "element is valid");
+          assertHintContent(element, "");
+
+          prop1 = formComplex.getElement('property1');
+          assertHintContent(prop1, element.T("This field is required."));
+          prop2 = formComplex.getElement('property2');
+          assertHintContent(prop2, "");
         });
 
-        test('autovalidate, do not show errors', function () {
+        test('autovalidate, do not show errors', function() {
           var element = fixture('propertyTests');
+          element.schema = getSchema();
           element.autovalidate = true;
           element.required = true;
-          element.value = "";
+          element.value = [{}];
 
           var isValid = element.validate();
-          assert.equal(false, isValid, "element is valid");
+          assert.equal(isValid, false, "element is valid");
+          assertHintContent(element, "");
 
-          var hint = Polymer.dom(element.$.hint);
-          assert.equal(hint.textContent, element.T('This field is required.'), 'Error message not set correctly');
+          var formComplex = element._getElementFromForm(0);
+          assertHintContent(formComplex, "");
+
+          var prop1 = formComplex.getElement('property1');
+          assertHintContent(prop1, element.T("This field is required."));
+          var prop2 = formComplex.getElement('property2');
+          assertHintContent(prop2, "");
+
+          isValid = element.validate(false);
+          assert.equal(isValid, false, "element is valid");
+          assertHintContent(element, "");
+
+          prop1 = formComplex.getElement('property1');
+          assertHintContent(prop1, element.T("This field is required."));
+          prop2 = formComplex.getElement('property2');
+          assertHintContent(prop2, "");
         });
 
-        test('autovalidate, do show errors', function () {
+        test('autovalidate, do show errors', function() {
           var element = fixture('propertyTests');
+          element.schema = getSchema();
           element.autovalidate = true;
           element.required = true;
-          element.value = "";
+          element.value = [{}];
 
           var isValid = element.validate(true);
-          assert.equal(false, isValid, "element is valid");
+          assert.equal(isValid, false, "element is valid");
+          assertHintContent(element, "");
 
-          var hint = Polymer.dom(element.$.hint);
-          assert.equal(hint.textContent, element.T('This field is required.'), 'Error message not set correctly');
+          var formComplex = element._getElementFromForm(0);
+          assertHintContent(formComplex, "");
+
+          prop1 = formComplex.getElement('property1');
+          assertHintContent(prop1, element.T("This field is required."));
+          prop2 = formComplex.getElement('property2');
+          assertHintContent(prop2, "");
+
+          isValid = element.validate(false);
+          assert.equal(isValid, false, "element is valid");
+          assertHintContent(element, "");
+
+          prop1 = formComplex.getElement('property1');
+          assertHintContent(prop1, element.T("This field is required."));
+          prop2 = formComplex.getElement('property2');
+          assertHintContent(prop2, "");
         });
 
       });
@@ -150,4 +298,5 @@
   </script>
 
 </body>
+
 </html>
