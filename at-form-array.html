@@ -203,7 +203,7 @@
       }],
 
       observers: [
-        '_internalValidStateUpdate(disabled, hide, required)'
+        '_internalValidStateUpdate(disabled, required)'
       ],
 
       // ------------------------------------------------------------
@@ -224,7 +224,7 @@
         });
         this.toggleClass('hidden', this.layout === 'vertical', this.$.headerWrapper);
         this._isReady = true;
-        this._internalValidStateUpdate(this.disabled, this.hide, this.required);
+        this._internalValidStateUpdate(this.disabled, this.required);
       },
 
       _disabledChanged: function(newValue, oldValue) {
@@ -265,7 +265,7 @@
         this.toggleClass('hidden', newValue, container);
       },
 
-      _internalValidStateUpdate: function(disabled, hide, required) {
+      _internalValidStateUpdate: function(disabled, required) {
         if (!this._isReady) {
           return;
         }
