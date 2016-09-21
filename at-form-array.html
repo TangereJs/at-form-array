@@ -885,7 +885,9 @@
         if (schemaHelpers.areEqual(previousValue, value)) {
           return;
         }
-        this.value[position] = value;
+        var clonedValue = {};
+        this._cloneObject(Object.keys(value), value, clonedValue);
+        this.value[position] = clonedValue;
         this._fireValueChangedEvent(this.value);
       },
 
