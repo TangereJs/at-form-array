@@ -203,7 +203,7 @@
       }],
 
       observers: [
-        '_internalValidStateUpdate(disabled, required)'
+        '_internalValidStateUpdate(required)'
       ],
 
       // ------------------------------------------------------------
@@ -224,7 +224,7 @@
         });
         this.toggleClass('hidden', this.layout === 'vertical', this.$.headerWrapper);
         this._isReady = true;
-        this._internalValidStateUpdate(this.disabled, this.required);
+        this._internalValidStateUpdate(this.required);
       },
 
       _disabledChanged: function(newValue, oldValue) {
@@ -265,7 +265,7 @@
         this.toggleClass('hidden', newValue, container);
       },
 
-      _internalValidStateUpdate: function(disabled, required) {
+      _internalValidStateUpdate: function(required) {
         if (!this._isReady) {
           return;
         }
@@ -278,7 +278,12 @@
           errorMessage: ""
         };
 
-        validationResult.isValid = !this.required || (this.required && this.value.length > 0);
+        if (this.value === null) {
+          validationResult.isValid = !this.required;
+        } else {
+          validationResult.isValid = !this.required || (this.required && this.value.length > 0);
+        }
+
         if (!validationResult.isValid) {
           validationResult.errorMessage = this.T('This field is required.');
         }
@@ -287,16 +292,19 @@
 
       validate: function(showError) {
 
-        showError = showError === undefined ? this.autovalidate : showError;
+        showError === undefined ? this.autovalidate : showError;
 
         var validationResult = this._validateBaseData();
         if (showError) { this._handleValidationResult(validationResult); }
-        if (validationResult.isFinal) {
+        if (!validationResult.isValid) {
           return validationResult.isValid;
         }
 
         validationResult = this._validateRequired();
         if (showError) { this._handleValidationResult(validationResult); }
+        if (!validationResult.isValid) {
+          return validationResult.isValid;
+        }
 
         var formComplexElements = Polymer.dom(this.root).querySelectorAll('at-form-complex');
         var fceLen = formComplexElements.length;
@@ -428,6 +436,7 @@
         }
 
         if (!schemaHelpers.isArray(newValue)) {
+          this._fireValueChangedEvent(this.value);
           return;
         }
 

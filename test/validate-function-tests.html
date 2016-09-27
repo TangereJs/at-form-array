@@ -206,7 +206,7 @@
         assert.equal(true, sh_.areEqual(element.value, getData1()), 'value not set correctly');
 
         var isValid = element.validate(false);
-        assert.equal(false, isValid, "form-complex is valid");
+        assert.equal(isValid, false, "form-array is valid");
 
         // errors should initially be hidden
 
@@ -218,7 +218,7 @@
         assertFields(complex, fieldNames, expectedHintValues, expectedValidValues);
 
         var isValid = element.validate(true);
-        assert.equal(false, isValid, "form-complex is valid");
+        assert.equal(isValid, false, "form-array is valid");
 
         // errors should now be visible
 
@@ -226,7 +226,7 @@
         assertFields(complex, fieldNames, expectedHintValues, expectedValidValues);
 
         var isValid = element.validate(false);
-        assert.equal(false, isValid, "form-complex is valid");
+        assert.equal(isValid, false, "form-array is valid");
 
         // errors are still visible because show errors doesn't hide previous errors
         assertFields(complex, fieldNames, expectedHintValues, expectedValidValues);
@@ -246,7 +246,7 @@
         assert.equal(true, sh_.areEqual(element.value, getData1()), 'value not set correctly');
 
         var isValid = element.validate(true);
-        assert.equal(false, isValid, "form-complex is valid");
+        assert.equal(isValid, false, "form-array is valid");
 
         // errors should initially be visible
 
@@ -258,13 +258,13 @@
         assertFields(complex, fieldNames, expectedHintValues, expectedValidValues);
 
         var isValid = element.validate(false);
-        assert.equal(false, isValid, "form-complex is valid");
+        assert.equal(isValid, false, "form-array is valid");
 
         // errors are still visible because show errors doesn't hide previous errors
         assertFields(complex, fieldNames, expectedHintValues, expectedValidValues);
 
         var isValid = element.validate(true);
-        assert.equal(false, isValid, "form-complex is valid");
+        assert.equal(isValid, false, "form-array is valid");
 
         // errors are still visible because validate was called with showErrors = true
         assertFields(complex, fieldNames, expectedHintValues, expectedValidValues);
@@ -284,7 +284,7 @@
         assert.equal(true, sh_.areEqual(element.value, getData1()), 'value not set correctly');
 
         var isValid = element.validate(true);
-        assert.equal(false, isValid, "form-complex is valid");
+        assert.equal(isValid, false, "form-array is valid");
 
         // errors should initially be visible
 
@@ -296,15 +296,15 @@
         assertFields(complex, fieldNames, expectedHintValues, expectedValidValues);
 
         element.disabled = true;
-        assert.equal(true, element.valid, "form-complex is invalid");
+        assert.equal(element.valid, false, "form-array is invalid");
 
         expectedHintValues = [ element.T("This field is required."), element.T("This field is required."), "", "" ];
-        expectedValidValues = [ true, true, true, true ];
+        expectedValidValues = [ false, false, true, true ];
         // errors are still visible because show errors doesn't hide previous errors
         assertFields(complex, fieldNames, expectedHintValues, expectedValidValues);
 
         element.disabled = false;
-        assert.equal(false, element.valid, "form-complex is valid");
+        assert.equal(element.valid, false, "form-array is valid");
         expectedHintValues = [ element.T("This field is required."), element.T("This field is required."), "", "" ];
         expectedValidValues = [ false, false, true, true ];
         // errors are still visible because validate was called with showErrors = true
@@ -325,7 +325,7 @@
         assert.equal(true, sh_.areEqual(element.value, getData1()), 'value not set correctly');
 
         var isValid = element.validate(true);
-        assert.equal(false, isValid, "form-complex is valid");
+        assert.equal(isValid, false, "form-array is valid");
 
         // errors should initially be visible
 
@@ -337,7 +337,7 @@
         assertFields(complex, fieldNames, expectedHintValues, expectedValidValues);
 
         element.hide = true;
-        assert.equal(true, element.valid, "form-complex is invalid");
+        assert.equal(element.valid, false, "form-array is valid");
 
         expectedHintValues = [ element.T("This field is required."), element.T("This field is required."), "", "" ];
         expectedValidValues = [ false, false, true, true ];
@@ -345,7 +345,7 @@
         assertFields(complex, fieldNames, expectedHintValues, expectedValidValues);
 
         element.hide = false;
-        assert.equal(false, element.valid, "form-complex is valid");
+        assert.equal(element.valid, false, "form-array is valid");
         expectedHintValues = [ element.T("This field is required."), element.T("This field is required."), "", "" ];
         expectedValidValues = [ false, false, true, true ];
         // errors are still visible because validate was called with showErrors = true
