@@ -28,7 +28,7 @@
 
   <test-fixture id="autovalidate">
     <template>
-      <at-form-array schema='{ "items": { "properties": { "property1": { "type": "string", "required": "true" }, "property2": { "type": "string", "default": "lorem ipsum", "required": true } } } }' autovalidate></at-form-array>
+      <at-form-array schema='{ "items": { "properties": { "property1": { "type": "string", "required": "true" }, "property2": { "type": "string", "default": "lorem ipsum", "required": true } } } }' auto-validate></at-form-array>
     </template>
   </test-fixture>
 
@@ -237,7 +237,7 @@
         test('autovalidate, do not show errors', function() {
           var element = fixture('propertyTests');
           element.schema = getSchema();
-          element.autovalidate = true;
+          element.autoValidate = true;
           element.required = true;
           element.value = [{}];
 
@@ -266,7 +266,7 @@
         test('autovalidate, do show errors', function() {
           var element = fixture('propertyTests');
           element.schema = getSchema();
-          element.autovalidate = true;
+          element.autoValidate = true;
           element.required = true;
           element.value = [{}];
 

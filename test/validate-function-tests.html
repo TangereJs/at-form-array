@@ -296,7 +296,9 @@
         assertFields(complex, fieldNames, expectedHintValues, expectedValidValues);
 
         element.disabled = true;
-        assert.equal(element.valid, false, "form-array is invalid");
+        // disabling at-form-array, disables at-form-complex elements which disables all elements contained in at-form-complex
+        // at-form-complex ignores disabled and hidden elements when validating so at-form-array here is valid
+        assert.equal(element.valid, true, "form-array is invalid");
 
         expectedHintValues = [ element.T("This field is required."), element.T("This field is required."), "", "" ];
         expectedValidValues = [ false, false, true, true ];

@@ -292,7 +292,7 @@
 
       validate: function(showError) {
 
-        showError === undefined ? this.autovalidate : showError;
+        showError === undefined ? this.autoValidate : showError;
 
         var validationResult = this._validateBaseData();
         if (showError) { this._handleValidationResult(validationResult); }
@@ -752,9 +752,9 @@
         var self = this;
         var resultHtml = document.createElement('at-form-complex');
 
-        // form-array passes its value of autovalidate to its contained elements
-        // this enables at-core-form to control autovalidate value for elements contained inside form-array
-        resultHtml.autovalidate = this.autovalidate;
+        // form-array passes its value of autoValidate to its contained elements
+        // this enables at-core-form to control autoValidate value for elements contained inside form-array
+        resultHtml.autoValidate = this.autoValidate;
 
         resultHtml._layout = self.layout;
         var rules = [];
