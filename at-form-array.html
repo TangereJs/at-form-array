@@ -292,10 +292,10 @@
 
       validate: function(showError) {
 
-        showError === undefined ? this.autoValidate : showError;
+        showError = showError === undefined ? this.autoValidate : showError;
 
         var validationResult = this._validateBaseData();
-        if (showError) { this._handleValidationResult(validationResult); }
+        this._handleValidationResult(validationResult);
         if (!validationResult.isValid) {
           return validationResult.isValid;
         }
@@ -421,7 +421,9 @@
           }
         }
 
-        this._valueChanged(this.value, this.value);
+        if (this._isReady) {
+          this._valueChanged(this.value, this.value);
+        }
       },
 
       _valueChanged: function(newValue, oldValue) {
@@ -436,6 +438,7 @@
         }
 
         if (!schemaHelpers.isArray(newValue)) {
+          if (this.autoValidate) { this.validate(true); }
           this._fireValueChangedEvent(this.value);
           return;
         }
@@ -452,6 +455,7 @@
           console.log('Can not update value when schema is not assigned');
           return;
         }
+        if (this.autoValidate) { this.validate(true); }
         if (!schemaHelpers.areEqual(newValue, oldValue)) {
           this._fireValueChangedEvent(this.value);
         }
@@ -667,7 +671,7 @@
         // remove exceeding html
         while (valueArrIndex < existingItemHtmlArr.length) {
           existingItemHtml = existingItemHtmlArr[valueArrIndex];
-          existingItemHtml.remove();
+          Polymer.dom(this.$.itemsContainer).removeChild(existingItemHtml);
           valueArrIndex += 1;
         }
       },

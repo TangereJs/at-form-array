@@ -228,6 +228,7 @@
         var isValid = element.validate(false);
         assert.equal(isValid, false, "form-array is valid");
 
+        expectedHintValues = [ "", "", "", "" ];
         // errors are still visible because show errors doesn't hide previous errors
         assertFields(complex, fieldNames, expectedHintValues, expectedValidValues);
       });
@@ -260,12 +261,14 @@
         var isValid = element.validate(false);
         assert.equal(isValid, false, "form-array is valid");
 
+        expectedHintValues = [ "", "", "", "" ];
         // errors are still visible because show errors doesn't hide previous errors
         assertFields(complex, fieldNames, expectedHintValues, expectedValidValues);
 
         var isValid = element.validate(true);
         assert.equal(isValid, false, "form-array is valid");
 
+        expectedHintValues = [ element.T("This field is required."), element.T("This field is required."), "", "" ];
         // errors are still visible because validate was called with showErrors = true
         assertFields(complex, fieldNames, expectedHintValues, expectedValidValues);
       });
@@ -300,14 +303,14 @@
         // at-form-complex ignores disabled and hidden elements when validating so at-form-array here is valid
         assert.equal(element.valid, true, "form-array is invalid");
 
-        expectedHintValues = [ element.T("This field is required."), element.T("This field is required."), "", "" ];
+        expectedHintValues = [ "", "", "", "" ];
         expectedValidValues = [ false, false, true, true ];
         // errors are still visible because show errors doesn't hide previous errors
         assertFields(complex, fieldNames, expectedHintValues, expectedValidValues);
 
         element.disabled = false;
         assert.equal(element.valid, false, "form-array is valid");
-        expectedHintValues = [ element.T("This field is required."), element.T("This field is required."), "", "" ];
+        expectedHintValues = [ "", "", "", "" ];
         expectedValidValues = [ false, false, true, true ];
         // errors are still visible because validate was called with showErrors = true
         assertFields(complex, fieldNames, expectedHintValues, expectedValidValues);
@@ -341,14 +344,14 @@
         element.hide = true;
         assert.equal(element.valid, false, "form-array is valid");
 
-        expectedHintValues = [ element.T("This field is required."), element.T("This field is required."), "", "" ];
+        expectedHintValues = [ "", "", "", "" ];
         expectedValidValues = [ false, false, true, true ];
         // errors are still visible because show errors doesn't hide previous errors
         assertFields(complex, fieldNames, expectedHintValues, expectedValidValues);
 
         element.hide = false;
         assert.equal(element.valid, false, "form-array is valid");
-        expectedHintValues = [ element.T("This field is required."), element.T("This field is required."), "", "" ];
+        expectedHintValues = [ "", "", "", "" ];
         expectedValidValues = [ false, false, true, true ];
         // errors are still visible because validate was called with showErrors = true
         assertFields(complex, fieldNames, expectedHintValues, expectedValidValues);

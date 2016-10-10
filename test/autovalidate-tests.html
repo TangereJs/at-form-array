@@ -110,7 +110,7 @@
           var prop2 = formComplex.getElement('property2');
           assertHintContent(prop2, "");
 
-          isValid = element.validate();
+          isValid = element.validate(true);
           assert.equal(isValid, false, "element is valid");
           assertHintContent(element, "");
 
@@ -142,7 +142,7 @@
           assertHintContent(element, "");
 
           prop1 = formComplex.getElement('property1');
-          assertHintContent(prop1, element.T("This field is required."));
+          assertHintContent(prop1, "");
           prop2 = formComplex.getElement('property2');
           assertHintContent(prop2, "");
         });
@@ -169,7 +169,7 @@
           assertHintContent(element, "");
 
           prop1 = formComplex.getElement('property1');
-          assertHintContent(prop1, element.T("This field is required."));
+          assertHintContent(prop1, "");
           prop2 = formComplex.getElement('property2');
           assertHintContent(prop2, "");
         });
@@ -229,7 +229,7 @@
           assertHintContent(element, "");
 
           prop1 = formComplex.getElement('property1');
-          assertHintContent(prop1, element.T("This field is required."));
+          assertHintContent(prop1, "");
           prop2 = formComplex.getElement('property2');
           assertHintContent(prop2, "");
         });
@@ -258,7 +258,7 @@
           assertHintContent(element, "");
 
           prop1 = formComplex.getElement('property1');
-          assertHintContent(prop1, element.T("This field is required."));
+          assertHintContent(prop1, "");
           prop2 = formComplex.getElement('property2');
           assertHintContent(prop2, "");
         });
@@ -287,7 +287,7 @@
           assertHintContent(element, "");
 
           prop1 = formComplex.getElement('property1');
-          assertHintContent(prop1, element.T("This field is required."));
+          assertHintContent(prop1, "");
           prop2 = formComplex.getElement('property2');
           assertHintContent(prop2, "");
         });
