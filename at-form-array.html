@@ -859,6 +859,8 @@
             } else {
               result[propName] = "";
             }
+          } else if (propType === "array") {
+            result[propName] = [];
           } else {
             result[propName] = "";
           }
