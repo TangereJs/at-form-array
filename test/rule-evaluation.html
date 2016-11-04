@@ -1,0 +1,278 @@
+<!doctype html>
+<html>
+
+<head>
+
+  <title>at-form-text tests</title>
+
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1, user-scalable=yes">
+
+  <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
+
+  <script src="../../web-component-tester/browser.js"></script>
+  <script src="../../iron-test-helpers/test-helpers.js"></script>
+  <script src="../../iron-test-helpers/mock-interactions.js"></script>
+
+  <link rel="import" href="../at-form-array.html">
+
+</head>
+
+<body>
+
+  <test-fixture id="propertyTest">
+    <template>
+      <at-form-array></at-form-array>
+    </template>
+  </test-fixture>
+
+  <script>
+    /**
+          at-form-array rule evaluation
+         */
+
+    suite('rule evaluation tests', function() {
+
+      function isArray(obj) {
+        return Object.prototype.toString.call(obj) === "[object Array]";
+      }
+
+      function isObject(obj) {
+        return Object.prototype.toString.call(obj) === "[object Object]";
+      }
+
+      function isFunction(obj) {
+        return Object.prototype.toString.call(obj) === "[object Function]";
+      }
+
+      function areEqual(obj1, obj2) {
+        var result = false;
+        var obj1PropertyValue;
+        var obj2PropertyValue;
+
+        if (isArray(obj1) && isArray(obj2)) {
+          result = obj1.length === obj2.length;
+          // if lengths are different return false
+          if (!result) {
+            return result;
+          }
+
+          // else compare items in the arrays for equality
+          for (var i = 0; i < obj1.length && result; i++) {
+            obj1PropertyValue = obj1[i];
+            obj2PropertyValue = obj2[i];
+            result = areEqual(obj1PropertyValue, obj2PropertyValue);
+          }
+        } else if (isObject(obj1) && isObject(obj2)) {
+          var obj1Properties = Object.keys(obj1);
+          var obj2Properties = Object.keys(obj2);
+          // tests that these arrays have same lengths and same names
+          result = areEqual(obj1Properties, obj2Properties);
+
+          if (!result) {
+            return result;
+          }
+          // test that every property in both objects has same value
+          for (var j = 0; j < obj1Properties.length && result; j++) {
+            var obj1PropertyName = obj1Properties[j];
+            var obj2PropertyName = obj2Properties[j];
+            obj1PropertyValue = obj1[obj1PropertyName];
+            obj2PropertyValue = obj2[obj2PropertyName];
+            result = areEqual(obj1PropertyValue, obj2PropertyValue);
+          }
+        } else if (isFunction(obj1) && isFunction(obj2)) {
+          result = obj1.toString() === obj2.toString();
+        } else {
+          // this tests string, number, boolean, null and undefined
+          result = obj1 === obj2;
+        }
+
+        return result;
+      }
+
+      function getSchema() {
+        return {
+          schema: {
+            items: {
+              properties: {
+                string1: {
+                  type: "string"
+                },
+                number2: {
+                  type: "number"
+                },
+                password3: {
+                  type: "string",
+                  xtype: "password"
+                }
+              }
+            }
+          },
+          rules: [{
+            caption: 'Rule #0',
+            position: 0,
+            rule: {
+              conditions: {
+                kind: 'all',
+                conditions: [{
+                  name: 'string1',
+                  operator: 'equalTo',
+                  compareTo: 'text',
+                  value: 'lorem'
+                }]
+              },
+              actions: [{
+                actionName: 'updateField',
+                fieldName: 'number2',
+                updateTo: 42
+              }, {
+                actionName: 'setFieldState',
+                fieldName: 'password3',
+                state: 'disabled'
+              }]
+            }
+          }]
+        };
+      }
+
+      function getValue1() {
+        return [{
+          string1: "",
+          number2: "",
+          password3: ""
+        }]
+      }
+
+      function getSchema2() {
+        return {
+          schema: {
+            items: {
+              properties: {
+                string1: {
+                  type: "string",
+                  default: "lorem"
+                },
+                number2: {
+                  type: "number"
+                },
+                password3: {
+                  type: "string",
+                  xtype: "password"
+                }
+              }
+            }
+          },
+          rules: [{
+            caption: 'Rule #0',
+            position: 0,
+            rule: {
+              conditions: {
+                kind: 'all',
+                conditions: [{
+                  name: 'string1',
+                  operator: 'equalTo',
+                  compareTo: 'text',
+                  value: 'lorem'
+                }]
+              },
+              actions: [{
+                actionName: 'updateField',
+                fieldName: 'number2',
+                updateTo: 42
+              }, {
+                actionName: 'setFieldState',
+                fieldName: 'password3',
+                state: 'disabled'
+              }]
+            }
+          }]
+        };
+      }
+
+      function getValue2() {
+        return [{
+          string1: "lorem",
+          number2: "",
+          password3: ""
+        }]
+      }
+
+      test('rule evaluation 1/2', function() {
+        var coreForm = fixture('propertyTest');
+        var i, elementId, element;
+        var isValid;
+
+        // set the schema
+        coreForm.schema = getSchema();
+        assert.equal(areEqual(coreForm.schema, getSchema()), true, 'schema is not set correctly');
+        coreForm.value = getValue1();
+        assert.equal(areEqual(coreForm.value, getValue1()), true, 'value not set correctly');
+
+        coreForm = coreForm._getElementFromForm(0);
+
+        var textElement = coreForm.getElement('string1');
+        assert.equal(textElement.value, '', 'value not set correctly');
+
+        var numberElement = coreForm.getElement('number2');
+        assert.equal(numberElement.value, '', 'value not set correctly');
+
+        var passwordElement = coreForm.getElement('password3');
+        assert.equal(passwordElement.disabled, false, 'disabled not set correctly');
+
+        textElement.value = "lorem";
+
+        assert.equal(textElement.value, 'lorem', 'value not set correctly');
+        assert.equal(numberElement.value, '42', 'value not set correctly');
+        assert.equal(passwordElement.disabled, true, 'disabled not set correctly');
+
+        textElement.value = "";
+
+        assert.equal(textElement.value, '', 'value not set correctly');
+        assert.equal(numberElement.value, "42", 'value not set correctly');
+        assert.equal(passwordElement.disabled, false, 'disabled not set correctly');
+      });
+
+      test('rule evaluation 2/2', function() {
+        var coreForm = fixture('propertyTest');
+        var i, elementId, element;
+        var isValid;
+
+        // set the schema
+        coreForm.schema = getSchema2();
+        assert.equal(areEqual(coreForm.schema, getSchema2()), true, 'schema is not set correctly');
+        coreForm.value = getValue2();
+        assert.equal(areEqual(coreForm.value, getValue2()), true, 'value not set correctly');
+
+
+        coreForm = coreForm._getElementFromForm(0);
+
+        var textElement = coreForm.getElement('string1');
+        assert.equal(textElement.value, 'lorem', 'value not set correctly');
+
+        var numberElement = coreForm.getElement('number2');
+        assert.equal(numberElement.value, '42', 'value not set correctly');
+
+        var passwordElement = coreForm.getElement('password3');
+        assert.equal(passwordElement.disabled, true, 'disabled not set correctly');
+
+        textElement.value = "";
+
+        assert.equal(textElement.value, '', 'value not set correctly');
+        assert.equal(numberElement.value, "42", 'value not set correctly');
+        assert.equal(passwordElement.disabled, false, 'disabled not set correctly');
+
+        textElement.value = "lorem";
+
+        assert.equal(textElement.value, 'lorem', 'value not set correctly');
+        assert.equal(numberElement.value, '42', 'value not set correctly');
+        assert.equal(passwordElement.disabled, true, 'disabled not set correctly');
+
+      });
+
+    });
+  </script>
+
+</body>
+
+</html>
