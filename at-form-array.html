@@ -869,6 +869,10 @@
           } else {
             result[propName] = "";
           }
+
+          if (propDef.default) {
+            result[propName] = propDef.default;
+          }
         }
 
         return result;
