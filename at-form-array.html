@@ -233,31 +233,22 @@
 
         var afNodeList = Polymer.dom(this.root).querySelectorAll('at-form-complex');
         var i, node;
-        var buttons = Polymer.dom(this.root).querySelectorAll('button');
-        var button;
 
-        if (newValue) {
-          for (i = 0; i < afNodeList.length; i++) {
-            node = afNodeList[i];
-            node.disabled = true;
-          }
-
-          for (i = 0; i < buttons.length; i++) {
-            button = buttons[i];
-            button.setAttribute('disabled', true);
-          }
-
-        } else {
-          for (i = 0; i < afNodeList.length; i++) {
-            node = afNodeList[i];
-            node.disabled = false;
-          }
-
-          for (i = 0; i < buttons.length; i++) {
-            button = buttons[i];
-            button.removeAttribute('disabled');
-          }
+        for (i = 0; i < afNodeList.length; i++) {
+          node = afNodeList[i];
+          node.disabled = newValue;
         }
+
+        // disable / hide the add button
+        var addItemBtn = this.$.addItemBtn;
+        this.toggleClass('hidden', newValue, addItemBtn);
+
+        // disable / hide the reorder/remote item(s) buttons
+        var itemActionsContainers = Polymer.dom(this.$.itemsContainer).querySelectorAll('.item-actions-container');
+        var self = this;
+        itemActionsContainers.forEach(function (item, index) {
+          self.toggleClass('hidden', newValue, item);
+        });
       },
 
       _hideChanged: function(newValue, oldValue) {
@@ -438,6 +429,7 @@
         }
 
         if (!schemaHelpers.isArray(newValue)) {
+          Polymer.dom(this.$.itemsContainer).innerHTML = "";
           if (this.autoValidate) { this.validate(true); }
           this._fireValueChangedEvent(this.value);
           return;
