@@ -776,6 +776,7 @@
         Polymer.dom(resultHtml).classList.add('layout');
         Polymer.dom(resultHtml).classList.add('flex');
         resultHtml._layout = self.layout;
+        resultHtml.disabled = self.disabled;
 
         resultHtml.addEventListener('value-changed', function(event) {
           var _resultHtml = resultHtml;
@@ -808,6 +809,7 @@
         existingItemHtml.value = assignValue;
         existingItemHtml._valueChanged(assignValue, prevValue);
         Polymer.dom(existingItemHtml).setAttribute('data-position', position);
+        existingItemHtml.disabled = this.disabled;
       },
 
       _updateItemActionButtons: function(existingItemHtml, position, maxItems) {
