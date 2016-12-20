@@ -689,7 +689,7 @@
 
         var itemActionsDiv = document.createElement('div');
         Polymer.dom(itemActionsDiv).classList.add('item-actions-container');
-        // Polymer.dom(itemActionsDiv).classList.add('flex-2');
+        this.toggleClass('hidden', this.disabled, itemActionsDiv);
         Polymer.dom(itemDiv).appendChild(itemActionsDiv);
 
         // ------------------------------
@@ -793,6 +793,12 @@
         var itemHtml = Polymer.dom(existingItemHtml).querySelector('.item');
         this._updateItemHtml(itemHtml, item, position);
         this._updateItemActionButtons(existingItemHtml, position, this.value.length);
+
+        var itemActionsContainers = Polymer.dom(existingItemHtml).querySelectorAll('.item-actions-container');
+        var self = this;
+        itemActionsContainers.forEach(function (container, index) {
+          self.toggleClass('hidden', self.disabled, container);
+        });
       },
 
       _updateItemHtml: function(existingItemHtml, item, position) {
