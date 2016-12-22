@@ -228,8 +228,8 @@
       },
 
       _disabledChanged: function(newValue, oldValue) {
-        var atContainer = this.$.atContainer;
-        this.toggleClass('disabled', newValue, atContainer);
+        this.toggleClass('disabled', newValue, this.$.label);
+        this.toggleClass('disabled', newValue, this.$.headerWrapper);
 
         var afNodeList = Polymer.dom(this.root).querySelectorAll('at-form-complex');
         var i, node;
