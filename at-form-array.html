@@ -618,7 +618,7 @@
           Polymer.dom(this.$.headerContainer).innerHTML = '';
 
           keyCount = Object.keys(properties).length;
-          flexValue = 12 / keyCount;
+          flexValue = Math.floor(12 / keyCount);
           flexClass = 'flex-' + flexValue;
 
           Object.keys(properties).forEach(function(propertyName, index) {
