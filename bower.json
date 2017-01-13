@@ -6,7 +6,8 @@
     "at-theme": "TangereJs/at-theme#0.8-preview",
     
     "at-core-schema": "TangereJs/at-core-schema#0.8-preview",
-    "at-rule-engine": "TangereJs/at-rule-engine#0.8-preview"
+    "at-rule-engine": "TangereJs/at-rule-engine#0.8-preview",
+    "at-form-complex": "TangereJs/at-form-complex#0.8-preview"
   },
   "version": "0.0.1.7"
 }
