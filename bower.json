@@ -3,7 +3,7 @@
   "private": true,
   "dependencies": {
     "tangere": "TangereJs/tangere#master",
-    "at-theme": "TangereJs/at-theme#master",   
+    "at-theme": "TangereJs/at-theme#master",
     "at-core-schema": "TangereJs/at-core-schema#master",
     "at-rule-engine": "TangereJs/at-rule-engine#master",
     "at-i18n": "TangereJs/at-i18n#master",
@@ -13,7 +13,8 @@
     "at-form-checkbox": "TangereJs/at-form-checkbox#master",
     "at-form-codemirror": "TangereJs/at-form-codemirror#master",
     "at-rule-edit": "TangereJs/at-rule-edit#master",
-    "at-doc-viewer": "TangereJs/at-doc-viewer#master"
+    "at-doc-viewer": "TangereJs/at-doc-viewer#master",
+    "iron-label": "PolymerElements/iron-label#master"
   },
-  "version": "0.0.1.7"
+  "version": "0.0.2.0"
 }
