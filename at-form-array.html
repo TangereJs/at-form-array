@@ -942,6 +942,7 @@
       },
 
       // *ij* since array.schema can be either { items: { properties: {} } } or { schema: { items: { properties: {} } }, rules: [] }
+      // *ij* update. array.schema can be { properties: {}, rules: [] }, also, which is the same as at-core-form.schema
       // this helper function gets the propertis for both cases
       // if an error occurs false is returned as result
       _getSchemaProperties: function(schema) {
@@ -951,19 +952,21 @@
         if (!sh.isObject(schema)) {
           return false;
         }
-        // assume that schema is { items: { properties: {} } }
-        letSchema = schema;
-        // if schema is { schema: { items: { properties: {} } }, rules: [] }
-        if (sh.isObject(schema.schema)) {
-          // use schema.schema
-          letSchema = schema.schema;
+
+        // check if schema is { items: { properties: {} } }
+        if (sh.isObject(schema.items) && sh.isObject(schema.items.properties)) {
+          return schema.items.properties;
+        
+        // check if schema is { schema: { items: { properties: {} } }, rules: [] }
+        } else if (sh.isObject(schema.schema) && sh.isObject(schema.schema.items) && sh.isObject(schema.schema.items.properties)) {
+          return schema.schema.items.properties;
+
+        // check if schema is { properties: {} }
+        } else if (sh.isObject(schema) && sh.isObject(schema.properties)) {
+          return schema.properties;
         }
 
-        if (!sh.isObject(letSchema.items) || !sh.isObject(letSchema.items.properties)) {
-          return false;
-        }
-
-        return letSchema.items.properties;
+        return false;
       },
       _isString: function(obj) {
         return Object.prototype.toString.call(obj) === "[object String]";
