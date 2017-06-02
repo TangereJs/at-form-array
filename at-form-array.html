@@ -461,7 +461,7 @@
       },
 
       _addNewItem: function() {
-        var newEntry = this._createNewItemValueEntry(this.schema.items.properties);
+        var newEntry = this._createNewItemValueEntry(this._getSchemaProperties(this.schema));
 
         if (!this.value) {
           this.value = [];
