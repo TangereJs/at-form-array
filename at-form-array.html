@@ -849,9 +849,31 @@
       _createNewItemValueEntry: function(properties) {
         var result = {};
 
+        function isFunction(obj) {
+          return Object.prototype.toString.apply(obj) === "[object Function]";
+        }
+
+        function isArray(obj) {
+          return Object.prototype.toString.apply(obj) === "[object Array]";
+        }
+
         for (var propName in properties) {
           var propDef = properties[propName];
           var propType = propDef.type;
+
+          if (isFunction(propType)) {
+            if (propType.hasOwnProperty('name')) {
+              propType = propType.name.toLowerCase();              
+            } else {
+              // special case for IE since name property doesn't exist in IE
+              var fnResult = propType();
+              if (isArray(fnResult)) { 
+                propType = "array";
+              } else {
+                propType = typeof fnResult;
+              }
+            }
+          }
 
           if (propType === "string" && propDef.enum) {
             propType = "enum";
