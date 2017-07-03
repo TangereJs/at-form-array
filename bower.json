@@ -9,7 +9,7 @@
     "at-i18n": "TangereJs/at-i18n#master",
     "at-carbon-icon-button": "TangereJs/at-carbon-icon-button#master",
     "at-form-behaviors": "TangereJs/at-form-behaviors#master",
-    "layout": "Polymer/layout#master",
+    "layout": "TangereJs/layout#master",
     "at-form-checkbox": "TangereJs/at-form-checkbox#master",
     "at-form-codemirror": "TangereJs/at-form-codemirror#master",
     "at-rule-edit": "TangereJs/at-rule-edit#master",
