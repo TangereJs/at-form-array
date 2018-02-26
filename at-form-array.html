@@ -846,28 +846,27 @@
         }
       },
 
+      _isFunction: function(obj) {
+        return Object.prototype.toString.apply(obj) === "[object Function]";
+      },
+
+      _isArray: function(obj) {
+        return Object.prototype.toString.apply(obj) === "[object Array]";
+      },
+
       _createNewItemValueEntry: function(properties) {
         var result = {};
-
-        function isFunction(obj) {
-          return Object.prototype.toString.apply(obj) === "[object Function]";
-        }
-
-        function isArray(obj) {
-          return Object.prototype.toString.apply(obj) === "[object Array]";
-        }
 
         for (var propName in properties) {
           var propDef = properties[propName];
           var propType = propDef.type;
-
-          if (isFunction(propType)) {
+          if (this._isFunction(propType)) {
             if (propType.hasOwnProperty('name')) {
               propType = propType.name.toLowerCase();              
             } else {
               // special case for IE since name property doesn't exist in IE
               var fnResult = propType();
-              if (isArray(fnResult)) { 
+              if (this._isArray(fnResult)) { 
                 propType = "array";
               } else {
                 propType = typeof fnResult;
@@ -889,6 +888,10 @@
             }
           } else if (propType === "array") {
             result[propName] = [];
+          
+          } else if (propType === "element" && propDef.xtype === "at-form-modal") {
+            result[propName] = {};
+
           } else {
             result[propName] = "";
           }
