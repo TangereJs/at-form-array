@@ -13,12 +13,12 @@
   <script src="../webcomponentsjs/webcomponents-lite.js"></script>
   <link rel="import" href="at-form-array.html" />
 
-  <link rel="import" href="../layout/layout.html" />
+  <link rel="import" href="../at-core-style-classes/at-core-style-classes.html" />
   <link rel="import" href="../at-form-checkbox/at-form-checkbox.html" />
   <link rel="import" href="../at-form-codemirror/at-form-codemirror.html">
   <link rel="import" href="../at-rule-edit/at-rule-edit.html">
 
-  <style media="screen">
+  <style is="custom-style" include="at-core-style-classes">
     .valueEcho {
       min-height: 500px;
       margin: 0 6px;
@@ -27,21 +27,21 @@
 </head>
 
 <body>
-  <div class="horizontal layout">
-    <div class="vertical layout flex-6">
+  <div class="layout-horizontal">
+    <div class="layout-vertical layout-flex-6">
       <h3>at-form-array demo</h3>
-      <div class="horizontal layout">
+      <div class="layout-horizontal">
         <at-form-checkbox id="disableArray" label="Disable at-form-array"></at-form-checkbox>
         <at-form-checkbox id="validArray" label="Is valid?" disabled></at-form-checkbox>
         &nbsp;|&nbsp;<a onclick="validate()">validate array</a>
       </div>
       <at-form-array label="Random people" id="atFormArray" layout="horizontal"></at-form-array>
     </div>
-    <div class="vertical layout flex-6">
+    <div class="layout-vertical layout-flex-6">
       <at-rule-edit id="ruleEdit"></at-rule-edit>
     </div>
   </div>
-  <div class="vertical layout">
+  <div class="layout-vertical">
     <h3>at-form-array value echo</h3>
     <at-form-codemirror id="valueEcho" class="valueEcho" max-lines="0"></at-form-codemirror>
   </div>
