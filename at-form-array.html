@@ -862,11 +862,11 @@
           var propType = propDef.type;
           if (this._isFunction(propType)) {
             if (propType.hasOwnProperty('name')) {
-              propType = propType.name.toLowerCase();              
+              propType = propType.name.toLowerCase();
             } else {
               // special case for IE since name property doesn't exist in IE
               var fnResult = propType();
-              if (this._isArray(fnResult)) { 
+              if (this._isArray(fnResult)) {
                 propType = "array";
               } else {
                 propType = typeof fnResult;
@@ -888,7 +888,7 @@
             }
           } else if (propType === "array") {
             result[propName] = [];
-          
+
           } else if (propType === "element" && propDef.xtype === "at-form-modal") {
             result[propName] = {};
 
@@ -981,7 +981,7 @@
         // check if schema is { items: { properties: {} } }
         if (sh.isObject(schema.items) && sh.isObject(schema.items.properties)) {
           return schema.items.properties;
-        
+
         // check if schema is { schema: { items: { properties: {} } }, rules: [] }
         } else if (sh.isObject(schema.schema) && sh.isObject(schema.schema.items) && sh.isObject(schema.schema.items.properties)) {
           return schema.schema.items.properties;
