@@ -464,7 +464,7 @@
       _addNewItem: function() {
         var newEntry = this._createNewItemValueEntry(this._getSchemaProperties(this.schema));
 
-        if (!this.value) {
+        if (!this._isArray(this.value)) {
           this.value = [];
         }
 
