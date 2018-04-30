@@ -1,0 +1,194 @@
+<!doctype html>
+<html>
+
+<head>
+
+  <title>at-form-array tests</title>
+
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1, user-scalable=yes">
+
+  <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
+
+  <script src="../../web-component-tester/browser.js"></script>
+  <script src="../../iron-test-helpers/test-helpers.js"></script>
+  <script src="../../iron-test-helpers/mock-interactions.js"></script>
+
+  <link rel="import" href="../at-form-array.html">
+</head>
+
+<body>
+
+  <test-fixture id="propertyTests">
+    <template>
+      <at-form-array></at-form-array>
+    </template>
+  </test-fixture>
+
+  <script>
+    suite('UI interaction with invalid value', function() {
+
+      function getSchema() {
+        return {
+          properties: {
+            property1: {
+              type: "string",
+              required: true
+            },
+            property2: {
+              type: "string",
+              "default": "lorem ipsum",
+              required: true
+            }
+          }
+        };
+      }
+
+      function getData() {
+        return [{
+          property1: "lorem ipsum",
+          property2: "lorem ipsum"
+        }];
+      }
+
+      test('value is undefined', function() {
+        var elt = fixture('propertyTests');
+        elt.schema = getSchema();
+
+        elt.value = undefined;
+
+        assert.deepEqual(elt.value, undefined);
+
+        elt._addNewItem();
+        var inner = elt._getElementFromForm(0);
+        inner._updateValueObject('property1', "lorem ipsum");
+
+        assert.deepEqual(elt.value, getData());
+      });
+
+      test('value is null', function() {
+        var elt = fixture('propertyTests');
+        elt.schema = getSchema();
+
+        elt.value = null;
+        assert.deepEqual(elt.value, null);
+        
+        elt._addNewItem();
+        var inner = elt._getElementFromForm(0);
+        inner._updateValueObject('property1', "lorem ipsum");
+
+        assert.deepEqual(elt.value, getData());
+      });
+
+      test('value is false', function() {
+        var elt = fixture('propertyTests');
+        elt.schema = getSchema();
+
+        elt.value = false;
+
+        assert.deepEqual(elt.value, false);
+
+        elt._addNewItem();
+        var inner = elt._getElementFromForm(0);
+        inner._updateValueObject('property1', "lorem ipsum");
+
+        assert.deepEqual(elt.value, getData());
+      });
+
+      test('value is true', function() {
+        var elt = fixture('propertyTests');
+        elt.schema = getSchema();
+
+        elt.value = true;
+
+        assert.deepEqual(elt.value, true);
+
+        elt._addNewItem();
+        var inner = elt._getElementFromForm(0);
+        inner._updateValueObject('property1', "lorem ipsum");
+
+        assert.deepEqual(elt.value, getData());
+      });
+
+      test('value is -42', function() {
+        var elt = fixture('propertyTests');
+        elt.schema = getSchema();
+
+        elt.value = -42;
+
+        assert.deepEqual(elt.value, -42);
+
+        elt._addNewItem();
+        var inner = elt._getElementFromForm(0);
+        inner._updateValueObject('property1', "lorem ipsum");
+
+        assert.deepEqual(elt.value, getData());
+      });
+
+      test('value is 0', function() {
+        var elt = fixture('propertyTests');
+        elt.schema = getSchema();
+
+        elt.value = 0;
+
+        assert.deepEqual(elt.value, 0);
+
+        elt._addNewItem();
+        var inner = elt._getElementFromForm(0);
+        inner._updateValueObject('property1', "lorem ipsum");
+
+        assert.deepEqual(elt.value, getData());
+      });
+
+      test('value is empty string', function() {
+        var elt = fixture('propertyTests');
+        elt.schema = getSchema();
+
+        elt.value = "";
+
+        assert.deepEqual(elt.value, "");
+
+        elt._addNewItem();
+        var inner = elt._getElementFromForm(0);
+        inner._updateValueObject('property1', "lorem ipsum");
+
+        assert.deepEqual(elt.value, getData());
+      });      
+
+      test('value is invalid json string', function() {
+        var elt = fixture('propertyTests');
+        elt.schema = getSchema();
+
+        elt.value = "lorem ipsum";
+
+        assert.deepEqual(elt.value, "lorem ipsum");
+
+        elt._addNewItem();
+        var inner = elt._getElementFromForm(0);
+        inner._updateValueObject('property1', "lorem ipsum");
+
+        assert.deepEqual(elt.value, getData());
+      });
+
+      test('value is empty array', function() {
+        var elt = fixture('propertyTests');
+        elt.schema = getSchema();
+
+        elt.value = [];
+
+        assert.deepEqual(elt.value, []);
+
+        elt._addNewItem();
+        var inner = elt._getElementFromForm(0);
+        inner._updateValueObject('property1', "lorem ipsum");
+
+        assert.deepEqual(elt.value, getData());
+      });
+
+    });
+  </script>
+
+</body>
+
+</html>
