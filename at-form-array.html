@@ -652,6 +652,8 @@
         // query items container for existing html
         existingItemHtmlArr = Polymer.dom(this.$.itemsContainer).querySelectorAll('.item-container');
 
+        var unrenderedRowsCount = 0;
+
         // for each entry in this.value array
         for (valueArrIndex = 0; valueArrIndex < this.value.length; valueArrIndex += 1) {
           item = this.value[valueArrIndex];
@@ -661,18 +663,45 @@
             // update existing html if available
             this._updateItemContainerHtml(existingItemHtml, item, valueArrIndex);
           } else {
+            unrenderedRowsCount += 1;
+
             // create new html "item-container" if needed
             newItemHtml = this._createNewItemContainerHtml(item, valueArrIndex);
             Polymer.dom(this.$.itemsContainer).appendChild(newItemHtml);
+
           }
         }
-
+        
         // remove exceeding html
         while (valueArrIndex < existingItemHtmlArr.length) {
           existingItemHtml = existingItemHtmlArr[valueArrIndex];
           Polymer.dom(this.$.itemsContainer).removeChild(existingItemHtml);
           valueArrIndex += 1;
         }
+        
+        // fire at-form-array rendered when all form-complex child elements render
+        var self = this;
+        var formComplexElts = this.$.itemsContainer.querySelectorAll('at-form-complex');
+        Array.prototype.forEach.call(formComplexElts, function(elt) {
+          if (elt.__rendered__) {
+            unrenderedRowsCount -= 1;
+            if (unrenderedRowsCount != 0) return;
+            // event has to be async becase value-changed has to be fired first
+            self.async(function() {
+              self.fire('rendered', self);
+            }, 10);
+
+          } else {
+            elt.addEventListener('rendered', function(event) {
+              unrenderedRowsCount -= 1;
+              if (unrenderedRowsCount != 0) return;
+              // event has to be async becase value-changed has to be fired first
+              self.async(function() {
+                self.fire('rendered', self);
+              }, 10);
+            });
+          }
+        });
       },
 
       _createNewItemContainerHtml: function(item, position) {
