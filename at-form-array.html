@@ -693,11 +693,13 @@
 
           } else {
             elt.addEventListener('rendered', function(event) {
+              event.stopPropagation();
+              
               unrenderedRowsCount -= 1;
               if (unrenderedRowsCount != 0) return;
               // event has to be async because value-changed has to be fired first
               self.async(function() {
-                self.fire('rendered', self);
+                self.fire('rendered', self, { bubbles: false });
               }, 10);
             });
           }
