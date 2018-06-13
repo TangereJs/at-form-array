@@ -28,7 +28,8 @@
 
   <test-fixture id="autovalidate">
     <template>
-      <at-form-array schema='{ "items": { "properties": { "property1": { "type": "string", "required": "true" }, "property2": { "type": "string", "default": "lorem ipsum", "required": true } } } }' auto-validate></at-form-array>
+      <at-form-array schema='{ "items": { "properties": { "property1": { "type": "string", "required": "true" }, "property2": { "type": "string", "default": "lorem ipsum", "required": true } } } }'
+        auto-validate></at-form-array>
     </template>
   </test-fixture>
 
@@ -66,230 +67,259 @@
 
       suite('autovalidate set as attribute', function() {
 
-        test('no autovalidate, do not show errors', function() {
+        test('no autovalidate, do not show errors', function(done) {
           var element = fixture('noAutovalidate');
           element.required = true;
+          element.addEventListener('rendered', function() {
+            var isValid = element.validate();
+            assert.equal(isValid, false, "element is valid");
+            assertHintContent(element, "");
+  
+            var formComplex = element._getElementFromForm(0);
+            assertHintContent(formComplex, "");
+  
+            var prop1 = formComplex.getElement('property1');
+            assertHintContent(prop1, "");
+            var prop2 = formComplex.getElement('property2');
+            assertHintContent(prop2, "");
+  
+            isValid = element.validate(true);
+            assert.equal(isValid, false, "element is valid");
+            assertHintContent(element, "");
+  
+            prop1 = formComplex.getElement('property1');
+            assertHintContent(prop1, element.T("This field is required."));
+            prop2 = formComplex.getElement('property2');
+            assertHintContent(prop2, "");
+            
+            done();
+          });
+
           element.value = [{}];
-
-          var isValid = element.validate();
-          assert.equal(isValid, false, "element is valid");
-          assertHintContent(element, "");
-
-          var formComplex = element._getElementFromForm(0);
-          assertHintContent(formComplex, "");
-
-          var prop1 = formComplex.getElement('property1');
-          assertHintContent(prop1, "");
-          var prop2 = formComplex.getElement('property2');
-          assertHintContent(prop2, "");
-
-          isValid = element.validate(true);
-          assert.equal(isValid, false, "element is valid");
-          assertHintContent(element, "");
-
-          prop1 = formComplex.getElement('property1');
-          assertHintContent(prop1, element.T("This field is required."));
-          prop2 = formComplex.getElement('property2');
-          assertHintContent(prop2, "");
         });
 
-        test('no autovalidate, do show errors', function() {
+        test('no autovalidate, do show errors', function(done) {
           var element = fixture('noAutovalidate');
           element.required = true;
+          element.addEventListener('rendered', function() {
+            var isValid = element.validate(true);
+            assert.equal(isValid, false, "element is valid");
+            assertHintContent(element, "");
+  
+            var formComplex = element._getElementFromForm(0);
+            assertHintContent(formComplex, "");
+  
+            var prop1 = formComplex.getElement('property1');
+            assertHintContent(prop1, element.T("This field is required."));
+            var prop2 = formComplex.getElement('property2');
+            assertHintContent(prop2, "");
+  
+            isValid = element.validate(true);
+            assert.equal(isValid, false, "element is valid");
+            assertHintContent(element, "");
+  
+            prop1 = formComplex.getElement('property1');
+            assertHintContent(prop1, element.T("This field is required."));
+            prop2 = formComplex.getElement('property2');
+            assertHintContent(prop2, "");
+            
+            done();
+          });
           element.value = [{}];
-
-          var isValid = element.validate(true);
-          assert.equal(isValid, false, "element is valid");
-          assertHintContent(element, "");
-
-          var formComplex = element._getElementFromForm(0);
-          assertHintContent(formComplex, "");
-
-          var prop1 = formComplex.getElement('property1');
-          assertHintContent(prop1, element.T("This field is required."));
-          var prop2 = formComplex.getElement('property2');
-          assertHintContent(prop2, "");
-
-          isValid = element.validate(true);
-          assert.equal(isValid, false, "element is valid");
-          assertHintContent(element, "");
-
-          prop1 = formComplex.getElement('property1');
-          assertHintContent(prop1, element.T("This field is required."));
-          prop2 = formComplex.getElement('property2');
-          assertHintContent(prop2, "");
         });
 
-        test('autovalidate, do not show errors', function() {
+        test('autovalidate, do not show errors', function(done) {
           var element = fixture('autovalidate');
           element.required = true;
+          element.addEventListener('rendered', function() { 
+            var isValid = element.validate();
+            assert.equal(isValid, false, "element is valid");
+            assertHintContent(element, "");
+  
+            var formComplex = element._getElementFromForm(0);
+            assertHintContent(formComplex, "");
+  
+            var prop1 = formComplex.getElement('property1');
+            assertHintContent(prop1, element.T("This field is required."));
+            var prop2 = formComplex.getElement('property2');
+            assertHintContent(prop2, "");
+  
+            isValid = element.validate(false);
+            assert.equal(isValid, false, "element is valid");
+            assertHintContent(element, "");
+  
+            prop1 = formComplex.getElement('property1');
+            assertHintContent(prop1, "");
+            prop2 = formComplex.getElement('property2');
+            assertHintContent(prop2, "");
+            
+            done();
+          });
           element.value = [{}];
-
-          var isValid = element.validate();
-          assert.equal(isValid, false, "element is valid");
-          assertHintContent(element, "");
-
-          var formComplex = element._getElementFromForm(0);
-          assertHintContent(formComplex, "");
-
-          var prop1 = formComplex.getElement('property1');
-          assertHintContent(prop1, element.T("This field is required."));
-          var prop2 = formComplex.getElement('property2');
-          assertHintContent(prop2, "");
-
-          isValid = element.validate(false);
-          assert.equal(isValid, false, "element is valid");
-          assertHintContent(element, "");
-
-          prop1 = formComplex.getElement('property1');
-          assertHintContent(prop1, "");
-          prop2 = formComplex.getElement('property2');
-          assertHintContent(prop2, "");
         });
 
-        test('autovalidate, do show errors', function() {
+        test('autovalidate, do show errors', function(done) {
           var element = fixture('autovalidate');
           element.required = true;
+
+          element.addEventListener('rendered', function() {
+            var isValid = element.validate(true);
+            assert.equal(isValid, false, "element is valid");
+            assertHintContent(element, "");
+
+            var formComplex = element._getElementFromForm(0);
+            assertHintContent(formComplex, "");
+
+            prop1 = formComplex.getElement('property1');
+            assertHintContent(prop1, element.T("This field is required."));
+            prop2 = formComplex.getElement('property2');
+            assertHintContent(prop2, "");
+
+            isValid = element.validate(false);
+            assert.equal(isValid, false, "element is valid");
+            assertHintContent(element, "");
+
+            prop1 = formComplex.getElement('property1');
+            assertHintContent(prop1, "");
+            prop2 = formComplex.getElement('property2');
+            assertHintContent(prop2, "");
+            done();
+          });
           element.value = [{}];
-
-          var isValid = element.validate(true);
-          assert.equal(isValid, false, "element is valid");
-          assertHintContent(element, "");
-
-          var formComplex = element._getElementFromForm(0);
-          assertHintContent(formComplex, "");
-
-          prop1 = formComplex.getElement('property1');
-          assertHintContent(prop1, element.T("This field is required."));
-          prop2 = formComplex.getElement('property2');
-          assertHintContent(prop2, "");
-
-          isValid = element.validate(false);
-          assert.equal(isValid, false, "element is valid");
-          assertHintContent(element, "");
-
-          prop1 = formComplex.getElement('property1');
-          assertHintContent(prop1, "");
-          prop2 = formComplex.getElement('property2');
-          assertHintContent(prop2, "");
         });
 
       });
 
       suite('autovalidate set as property', function() {
 
-        test('no autovalidate, do not show errors', function() {
+        test('no autovalidate, do not show errors', function(done) {
           var element = fixture('propertyTests');
           element.schema = getSchema();
           element.required = true;
+
+          element.addEventListener('rendered', function() {
+            var isValid = element.validate();
+            assert.equal(isValid, false, "element is valid");
+            assertHintContent(element, "");
+
+            var formComplex = element._getElementFromForm(0);
+            assertHintContent(formComplex, "");
+
+            var prop1 = formComplex.getElement('property1');
+            assertHintContent(prop1, "");
+            var prop2 = formComplex.getElement('property2');
+            assertHintContent(prop2, "");
+
+            isValid = element.validate(true);
+            assert.equal(isValid, false, "element is valid");
+            assertHintContent(element, "");
+
+            prop1 = formComplex.getElement('property1');
+            assertHintContent(prop1, element.T("This field is required."));
+            prop2 = formComplex.getElement('property2');
+            assertHintContent(prop2, "");
+
+            done();
+          });
           element.value = [{}];
-
-          var isValid = element.validate();
-          assert.equal(isValid, false, "element is valid");
-          assertHintContent(element, "");
-
-          var formComplex = element._getElementFromForm(0);
-          assertHintContent(formComplex, "");
-
-          var prop1 = formComplex.getElement('property1');
-          assertHintContent(prop1, "");
-          var prop2 = formComplex.getElement('property2');
-          assertHintContent(prop2, "");
-
-          isValid = element.validate(true);
-          assert.equal(isValid, false, "element is valid");
-          assertHintContent(element, "");
-
-          prop1 = formComplex.getElement('property1');
-          assertHintContent(prop1, element.T("This field is required."));
-          prop2 = formComplex.getElement('property2');
-          assertHintContent(prop2, "");
         });
 
-        test('no autovalidate, do show errors', function() {
+        test('no autovalidate, do show errors', function(done) {
           var element = fixture('propertyTests');
           element.schema = getSchema();
           element.required = true;
+
+          element.addEventListener('rendered', function() {
+            var isValid = element.validate(true);
+            assert.equal(isValid, false, "element is valid");
+            assertHintContent(element, "");
+
+            var formComplex = element._getElementFromForm(0);
+            assertHintContent(formComplex, "");
+
+            var prop1 = formComplex.getElement('property1');
+            assertHintContent(prop1, element.T("This field is required."));
+            var prop2 = formComplex.getElement('property2');
+            assertHintContent(prop2, "");
+
+            isValid = element.validate();
+            assert.equal(isValid, false, "element is valid");
+            assertHintContent(element, "");
+
+            prop1 = formComplex.getElement('property1');
+            assertHintContent(prop1, "");
+            prop2 = formComplex.getElement('property2');
+            assertHintContent(prop2, "");
+
+            done();
+          });
           element.value = [{}];
-
-          var isValid = element.validate(true);
-          assert.equal(isValid, false, "element is valid");
-          assertHintContent(element, "");
-
-          var formComplex = element._getElementFromForm(0);
-          assertHintContent(formComplex, "");
-
-          var prop1 = formComplex.getElement('property1');
-          assertHintContent(prop1, element.T("This field is required."));
-          var prop2 = formComplex.getElement('property2');
-          assertHintContent(prop2, "");
-
-          isValid = element.validate();
-          assert.equal(isValid, false, "element is valid");
-          assertHintContent(element, "");
-
-          prop1 = formComplex.getElement('property1');
-          assertHintContent(prop1, "");
-          prop2 = formComplex.getElement('property2');
-          assertHintContent(prop2, "");
         });
 
-        test('autovalidate, do not show errors', function() {
+        test('autovalidate, do not show errors', function(done) {
           var element = fixture('propertyTests');
           element.schema = getSchema();
           element.autoValidate = true;
           element.required = true;
+
+          element.addEventListener('rendered', function() {
+            var isValid = element.validate();
+            assert.equal(isValid, false, "element is valid");
+            assertHintContent(element, "");
+
+            var formComplex = element._getElementFromForm(0);
+            assertHintContent(formComplex, "");
+
+            var prop1 = formComplex.getElement('property1');
+            assertHintContent(prop1, element.T("This field is required."));
+            var prop2 = formComplex.getElement('property2');
+            assertHintContent(prop2, "");
+
+            isValid = element.validate(false);
+            assert.equal(isValid, false, "element is valid");
+            assertHintContent(element, "");
+
+            prop1 = formComplex.getElement('property1');
+            assertHintContent(prop1, "");
+            prop2 = formComplex.getElement('property2');
+            assertHintContent(prop2, "");
+            done();
+          });
           element.value = [{}];
 
-          var isValid = element.validate();
-          assert.equal(isValid, false, "element is valid");
-          assertHintContent(element, "");
-
-          var formComplex = element._getElementFromForm(0);
-          assertHintContent(formComplex, "");
-
-          var prop1 = formComplex.getElement('property1');
-          assertHintContent(prop1, element.T("This field is required."));
-          var prop2 = formComplex.getElement('property2');
-          assertHintContent(prop2, "");
-
-          isValid = element.validate(false);
-          assert.equal(isValid, false, "element is valid");
-          assertHintContent(element, "");
-
-          prop1 = formComplex.getElement('property1');
-          assertHintContent(prop1, "");
-          prop2 = formComplex.getElement('property2');
-          assertHintContent(prop2, "");
         });
 
-        test('autovalidate, do show errors', function() {
+        test('autovalidate, do show errors', function(done) {
           var element = fixture('propertyTests');
           element.schema = getSchema();
           element.autoValidate = true;
           element.required = true;
+
+          element.addEventListener('rendered', function() {
+            var isValid = element.validate(true);
+            assert.equal(isValid, false, "element is valid");
+            assertHintContent(element, "");
+
+            var formComplex = element._getElementFromForm(0);
+            assertHintContent(formComplex, "");
+
+            prop1 = formComplex.getElement('property1');
+            assertHintContent(prop1, element.T("This field is required."));
+            prop2 = formComplex.getElement('property2');
+            assertHintContent(prop2, "");
+
+            isValid = element.validate(false);
+            assert.equal(isValid, false, "element is valid");
+            assertHintContent(element, "");
+
+            prop1 = formComplex.getElement('property1');
+            assertHintContent(prop1, "");
+            prop2 = formComplex.getElement('property2');
+            assertHintContent(prop2, "");
+            done();
+          });
           element.value = [{}];
 
-          var isValid = element.validate(true);
-          assert.equal(isValid, false, "element is valid");
-          assertHintContent(element, "");
-
-          var formComplex = element._getElementFromForm(0);
-          assertHintContent(formComplex, "");
-
-          prop1 = formComplex.getElement('property1');
-          assertHintContent(prop1, element.T("This field is required."));
-          prop2 = formComplex.getElement('property2');
-          assertHintContent(prop2, "");
-
-          isValid = element.validate(false);
-          assert.equal(isValid, false, "element is valid");
-          assertHintContent(element, "");
-
-          prop1 = formComplex.getElement('property1');
-          assertHintContent(prop1, "");
-          prop2 = formComplex.getElement('property2');
-          assertHintContent(prop2, "");
         });
 
       });
