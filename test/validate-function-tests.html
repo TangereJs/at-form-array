@@ -1,5 +1,6 @@
 <!doctype html>
 <html>
+
 <head>
 
   <title>at-form-array tests</title>
@@ -17,6 +18,7 @@
   <link rel="import" href="../at-form-array.html">
 
 </head>
+
 <body>
 
   <test-fixture id="validateFunctionTests">
@@ -139,7 +141,7 @@
 
     });
 
-    suite('showError tests', function () {
+    suite('showError tests', function() {
 
       function getSchema1() {
         return {
@@ -192,7 +194,7 @@
         }
       }
 
-      test('hide errors, show errors, hide errors', function () {
+      test('hide errors, show errors, hide errors', function() {
         var element = fixture('validateFunctionTests');
         var sh_ = window.schemaHelpers;
 
@@ -210,9 +212,9 @@
 
         // errors should initially be hidden
 
-        var fieldNames = [ "text1", "text2", "text3", "text4" ];
-        var expectedHintValues = [ "", "", "", "" ];
-        var expectedValidValues = [ false, false, true, true ];
+        var fieldNames = ["text1", "text2", "text3", "text4"];
+        var expectedHintValues = ["", "", "", ""];
+        var expectedValidValues = [false, false, true, true];
 
         var complex = element._getElementFromForm(0);
         assertFields(complex, fieldNames, expectedHintValues, expectedValidValues);
@@ -222,18 +224,18 @@
 
         // errors should now be visible
 
-        expectedHintValues = [ element.T("This field is required."), element.T("This field is required."), "", "" ];
+        expectedHintValues = [element.T("This field is required."), element.T("This field is required."), "", ""];
         assertFields(complex, fieldNames, expectedHintValues, expectedValidValues);
 
         var isValid = element.validate(false);
         assert.equal(isValid, false, "form-array is valid");
 
-        expectedHintValues = [ "", "", "", "" ];
+        expectedHintValues = ["", "", "", ""];
         // errors are still visible because show errors doesn't hide previous errors
         assertFields(complex, fieldNames, expectedHintValues, expectedValidValues);
       });
 
-      test('show errors, hide errors, show errors', function () {
+      test('show errors, hide errors, show errors', function() {
         var element = fixture('validateFunctionTests');
         var sh_ = window.schemaHelpers;
 
@@ -251,9 +253,9 @@
 
         // errors should initially be visible
 
-        var fieldNames = [ "text1", "text2", "text3", "text4" ];
-        var expectedHintValues = [ element.T("This field is required."), element.T("This field is required."), "", "" ];
-        var expectedValidValues = [ false, false, true, true ];
+        var fieldNames = ["text1", "text2", "text3", "text4"];
+        var expectedHintValues = [element.T("This field is required."), element.T("This field is required."), "", ""];
+        var expectedValidValues = [false, false, true, true];
 
         var complex = element._getElementFromForm(0);
         assertFields(complex, fieldNames, expectedHintValues, expectedValidValues);
@@ -261,19 +263,19 @@
         var isValid = element.validate(false);
         assert.equal(isValid, false, "form-array is valid");
 
-        expectedHintValues = [ "", "", "", "" ];
+        expectedHintValues = ["", "", "", ""];
         // errors are still visible because show errors doesn't hide previous errors
         assertFields(complex, fieldNames, expectedHintValues, expectedValidValues);
 
         var isValid = element.validate(true);
         assert.equal(isValid, false, "form-array is valid");
 
-        expectedHintValues = [ element.T("This field is required."), element.T("This field is required."), "", "" ];
+        expectedHintValues = [element.T("This field is required."), element.T("This field is required."), "", ""];
         // errors are still visible because validate was called with showErrors = true
         assertFields(complex, fieldNames, expectedHintValues, expectedValidValues);
       });
 
-      test('show errors and disable', function () {
+      test('show errors and disable', function() {
         var element = fixture('validateFunctionTests');
         var sh_ = window.schemaHelpers;
 
@@ -291,9 +293,9 @@
 
         // errors should initially be visible
 
-        var fieldNames = [ "text1", "text2", "text3", "text4" ];
-        var expectedHintValues = [ element.T("This field is required."), element.T("This field is required."), "", "" ];
-        var expectedValidValues = [ false, false, true, true ];
+        var fieldNames = ["text1", "text2", "text3", "text4"];
+        var expectedHintValues = [element.T("This field is required."), element.T("This field is required."), "", ""];
+        var expectedValidValues = [false, false, true, true];
 
         var complex = element._getElementFromForm(0);
         assertFields(complex, fieldNames, expectedHintValues, expectedValidValues);
@@ -303,20 +305,20 @@
         // at-form-complex ignores disabled and hidden elements when validating so at-form-array here is valid
         assert.equal(element.valid, true, "form-array is invalid");
 
-        expectedHintValues = [ "", "", "", "" ];
-        expectedValidValues = [ false, false, true, true ];
+        expectedHintValues = ["", "", "", ""];
+        expectedValidValues = [false, false, true, true];
         // errors are still visible because show errors doesn't hide previous errors
         assertFields(complex, fieldNames, expectedHintValues, expectedValidValues);
 
         element.disabled = false;
         assert.equal(element.valid, false, "form-array is valid");
-        expectedHintValues = [ "", "", "", "" ];
-        expectedValidValues = [ false, false, true, true ];
+        expectedHintValues = ["", "", "", ""];
+        expectedValidValues = [false, false, true, true];
         // errors are still visible because validate was called with showErrors = true
         assertFields(complex, fieldNames, expectedHintValues, expectedValidValues);
       });
 
-      test('show errors and hide', function () {
+      test('show errors and hide', function() {
         var element = fixture('validateFunctionTests');
         var sh_ = window.schemaHelpers;
 
@@ -334,9 +336,9 @@
 
         // errors should initially be visible
 
-        var fieldNames = [ "text1", "text2", "text3", "text4" ];
-        var expectedHintValues = [ element.T("This field is required."), element.T("This field is required."), "", "" ];
-        var expectedValidValues = [ false, false, true, true ];
+        var fieldNames = ["text1", "text2", "text3", "text4"];
+        var expectedHintValues = [element.T("This field is required."), element.T("This field is required."), "", ""];
+        var expectedValidValues = [false, false, true, true];
 
         var complex = element._getElementFromForm(0);
         assertFields(complex, fieldNames, expectedHintValues, expectedValidValues);
@@ -344,15 +346,15 @@
         element.hide = true;
         assert.equal(element.valid, false, "form-array is valid");
 
-        expectedHintValues = [ "", "", "", "" ];
-        expectedValidValues = [ false, false, true, true ];
+        expectedHintValues = ["", "", "", ""];
+        expectedValidValues = [false, false, true, true];
         // errors are still visible because show errors doesn't hide previous errors
         assertFields(complex, fieldNames, expectedHintValues, expectedValidValues);
 
         element.hide = false;
         assert.equal(element.valid, false, "form-array is valid");
-        expectedHintValues = [ "", "", "", "" ];
-        expectedValidValues = [ false, false, true, true ];
+        expectedHintValues = ["", "", "", ""];
+        expectedValidValues = [false, false, true, true];
         // errors are still visible because validate was called with showErrors = true
         assertFields(complex, fieldNames, expectedHintValues, expectedValidValues);
       });
@@ -360,4 +362,5 @@
   </script>
 
 </body>
+
 </html>
