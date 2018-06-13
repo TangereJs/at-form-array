@@ -79,7 +79,7 @@
     'use strict';
     Polymer({
       is: 'at-form-array',
-      behaviors: [ Tangere.behaviors.i18n, Tangere.behaviors.formUIGeneric ],
+      behaviors: [Tangere.behaviors.i18n, Tangere.behaviors.formUIGeneric],
       properties: {
         /**
          * Textual label for the element
@@ -149,7 +149,7 @@
          * @type Object | Stirng
          * @default { properties: { value: { type: "string", title: "value"} } }
          */
-         schema: {
+        schema: {
           type: Object,
           value: function() {
             return {
@@ -248,7 +248,7 @@
         // disable / hide the reorder/remote item(s) buttons
         var itemActionsContainers = Polymer.dom(this.$.itemsContainer).querySelectorAll('.item-actions-container');
         var self = this;
-        itemActionsContainers.forEach(function (item, index) {
+        itemActionsContainers.forEach(function(item, index) {
           self.toggleClass('hidden', newValue, item);
         });
       },
@@ -310,7 +310,7 @@
         return validationResult.isValid;
       },
 
-      _updateUIValidState: function (valid) {
+      _updateUIValidState: function(valid) {
         var label = this.$.label;
         this.toggleClass('error', !valid, label);
         var hint = this.$.hint;
@@ -388,7 +388,7 @@
 
         // on schema changed items from previous schema should be removed
         var itemsContainer = this.$.itemsContainer;
-        while(Polymer.dom(itemsContainer).firstChild) {
+        while (Polymer.dom(itemsContainer).firstChild) {
           Polymer.dom(itemsContainer).removeChild(Polymer.dom(itemsContainer).firstChild);
         }
         // also properties in value from previous schema should be deleted
@@ -407,7 +407,7 @@
             var oldPropertiesKeys = Object.keys(oldProperties);
             for (var i = 0; i < this.value.length; i++) {
               var current = this.value[i];
-              oldPropertiesKeys.forEach(function (oldPropertyName, index) {
+              oldPropertiesKeys.forEach(function(oldPropertyName, index) {
                 delete current[oldPropertyName];
               });
             }
@@ -799,7 +799,7 @@
 
         var itemActionsContainers = Polymer.dom(existingItemHtml).querySelectorAll('.item-actions-container');
         var self = this;
-        itemActionsContainers.forEach(function (container, index) {
+        itemActionsContainers.forEach(function(container, index) {
           self.toggleClass('hidden', self.disabled, container);
         });
       },
@@ -983,11 +983,11 @@
         if (sh.isObject(schema.items) && sh.isObject(schema.items.properties)) {
           return schema.items.properties;
 
-        // check if schema is { schema: { items: { properties: {} } }, rules: [] }
+          // check if schema is { schema: { items: { properties: {} } }, rules: [] }
         } else if (sh.isObject(schema.schema) && sh.isObject(schema.schema.items) && sh.isObject(schema.schema.items.properties)) {
           return schema.schema.items.properties;
 
-        // check if schema is { properties: {} }
+          // check if schema is { properties: {} }
         } else if (sh.isObject(schema) && sh.isObject(schema.properties)) {
           return schema.properties;
         }
