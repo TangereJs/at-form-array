@@ -1525,7 +1525,6 @@
 
         formArray.addEventListener('rendered', function() {
           assert.equal(schemaHelpers.areEqual(formArray.schema, getCoreFormSchema()), true, 'schema not set correctly');
-          assert.equal(schemaHelpers.areEqual(formArray.value, getCoreFormData()), true, 'value not set correctly');
           assert.equal(Polymer.dom(itemsContainer).children.length, 1, 'items container should not have elements');
 
           var expectedValues = [{
@@ -1590,11 +1589,12 @@
             assert.equal(Polymer.dom(insertPoint).children.length, 5, 'insert point doesn\'t contain corrent number of elements');
           }
 
-          assert.equal(eventCount, 1, 'at-form-array didn\'t fire corrent number of events');
+          assert.equal(eventCount, 2, 'at-form-array didn\'t fire corrent number of events');
           done();
         });
 
         formArray.value = getCoreFormData();
+        assert.deepEqual(formArray.value, getCoreFormData(), 'value not set correctly');
       });
 
     });
