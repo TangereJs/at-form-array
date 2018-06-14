@@ -198,76 +198,83 @@
         }]
       }
 
-      test('rule evaluation 1/2', function() {
-        var coreForm = fixture('propertyTest');
+      test('rule evaluation 1/2', function(done) {
+        var elt = fixture('propertyTest');
         var i, elementId, element;
         var isValid;
 
         // set the schema
-        coreForm.schema = getSchema();
-        assert.equal(areEqual(coreForm.schema, getSchema()), true, 'schema is not set correctly');
-        coreForm.value = getValue1();
-        assert.equal(areEqual(coreForm.value, getValue1()), true, 'value not set correctly');
-
-        coreForm = coreForm._getElementFromForm(0);
-
-        var textElement = coreForm.getElement('string1');
-        assert.equal(textElement.value, '', 'value not set correctly');
-
-        var numberElement = coreForm.getElement('number2');
-        assert.equal(numberElement.value, '', 'value not set correctly');
-
-        var passwordElement = coreForm.getElement('password3');
-        assert.equal(passwordElement.disabled, false, 'disabled not set correctly');
-
-        textElement.value = "lorem";
-
-        assert.equal(textElement.value, 'lorem', 'value not set correctly');
-        assert.equal(numberElement.value, '42', 'value not set correctly');
-        assert.equal(passwordElement.disabled, true, 'disabled not set correctly');
-
-        textElement.value = "";
-
-        assert.equal(textElement.value, '', 'value not set correctly');
-        assert.equal(numberElement.value, "42", 'value not set correctly');
-        assert.equal(passwordElement.disabled, false, 'disabled not set correctly');
+        elt.schema = getSchema();
+        assert.equal(areEqual(elt.schema, getSchema()), true, 'schema is not set correctly');
+        
+        elt.addEventListener('rendered', function() {
+          formComplex = elt._getElementFromForm(0);
+          
+          var textElement = formComplex.getElement('string1');
+          assert.equal(textElement.value, '', 'value not set correctly');
+          
+          var numberElement = formComplex.getElement('number2');
+          assert.equal(numberElement.value, '', 'value not set correctly');
+          
+          var passwordElement = formComplex.getElement('password3');
+          assert.equal(passwordElement.disabled, false, 'disabled not set correctly');
+          
+          textElement.value = "lorem";
+          
+          assert.equal(textElement.value, 'lorem', 'value not set correctly');
+          assert.equal(numberElement.value, '42', 'value not set correctly');
+          assert.equal(passwordElement.disabled, true, 'disabled not set correctly');
+          
+          textElement.value = "";
+          
+          assert.equal(textElement.value, '', 'value not set correctly');
+          assert.equal(numberElement.value, "42", 'value not set correctly');
+          assert.equal(passwordElement.disabled, false, 'disabled not set correctly');
+          
+          done();
+        });
+        
+        elt.value = getValue1();
+        assert.equal(areEqual(elt.value, getValue1()), true, 'value not set correctly');
       });
 
-      test('rule evaluation 2/2', function() {
-        var coreForm = fixture('propertyTest');
+      test('rule evaluation 2/2', function(done) {
+        var elt = fixture('propertyTest');
         var i, elementId, element;
         var isValid;
 
         // set the schema
-        coreForm.schema = getSchema2();
-        assert.equal(areEqual(coreForm.schema, getSchema2()), true, 'schema is not set correctly');
-        coreForm.value = getValue2();
-        assert.equal(areEqual(coreForm.value, getValue2()), true, 'value not set correctly');
+        elt.schema = getSchema2();
+        assert.deepEqual(elt.schema, getSchema2(), 'schema is not set correctly');
 
+        elt.addEventListener('rendered', function() {
+          formComplex = elt._getElementFromForm(0);
 
-        coreForm = coreForm._getElementFromForm(0);
+          var textElement = formComplex.getElement('string1');
+          assert.equal(textElement.value, 'lorem', 'value not set correctly');
 
-        var textElement = coreForm.getElement('string1');
-        assert.equal(textElement.value, 'lorem', 'value not set correctly');
+          var numberElement = formComplex.getElement('number2');
+          assert.equal(numberElement.value, '42', 'value not set correctly');
 
-        var numberElement = coreForm.getElement('number2');
-        assert.equal(numberElement.value, '42', 'value not set correctly');
+          var passwordElement = formComplex.getElement('password3');
+          assert.equal(passwordElement.disabled, true, 'disabled not set correctly');
 
-        var passwordElement = coreForm.getElement('password3');
-        assert.equal(passwordElement.disabled, true, 'disabled not set correctly');
+          textElement.value = "";
 
-        textElement.value = "";
+          assert.equal(textElement.value, '', 'value not set correctly');
+          assert.equal(numberElement.value, "42", 'value not set correctly');
+          assert.equal(passwordElement.disabled, false, 'disabled not set correctly');
 
-        assert.equal(textElement.value, '', 'value not set correctly');
-        assert.equal(numberElement.value, "42", 'value not set correctly');
-        assert.equal(passwordElement.disabled, false, 'disabled not set correctly');
+          textElement.value = "lorem";
 
-        textElement.value = "lorem";
-
-        assert.equal(textElement.value, 'lorem', 'value not set correctly');
-        assert.equal(numberElement.value, '42', 'value not set correctly');
-        assert.equal(passwordElement.disabled, true, 'disabled not set correctly');
-
+          assert.equal(textElement.value, 'lorem', 'value not set correctly');
+          assert.equal(numberElement.value, '42', 'value not set correctly');
+          assert.equal(passwordElement.disabled, true, 'disabled not set correctly');
+          done();
+        });
+        
+        elt.value = getValue2();
+        assert.deepEqual(elt.value, getValue2(), 'value not set correctly');
       });
 
     });
