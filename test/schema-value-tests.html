@@ -303,7 +303,10 @@
 
       function getData() {
         return [{
-
+          text1: "",
+            text2: "",
+            text3: "text3 lorem ipsum",
+            text4: "text4 lorem ipsum"
         },
         {
           text1: "",
@@ -426,6 +429,8 @@
         assert.equal(Polymer.dom(itemsContainer).children.length, 0, 'items container should not have elements');
 
         formArray.addEventListener('rendered', function(event) {
+          if (event.detail.is !== 'at-form-array') return;
+
           assert.equal(schemaHelpers.areEqual(formArray.schema, getSchema()), true, 'schema not set correctly');
           assert.equal(schemaHelpers.areEqual(formArray.value, getData()), true, 'value not set correctly');
           assert.equal(Polymer.dom(itemsContainer).children.length, 4, 'items container should not have elements');
@@ -509,6 +514,8 @@
         assert.equal(Polymer.dom(itemsContainer).children.length, 0, 'items container should not have elements');
 
         formArray.addEventListener('rendered', function() {
+          if (event.detail.is !== 'at-form-array') return;
+
           assert.equal(schemaHelpers.areEqual(formArray.schema, getSchema()), true, 'schema not set correctly');
           assert.equal(schemaHelpers.areEqual(formArray.value, getData()), true, 'value not set correctly');
           assert.equal(Polymer.dom(itemsContainer).children.length, 4, 'items container should not have elements');
@@ -591,6 +598,8 @@
         assert.equal(Polymer.dom(itemsContainer).children.length, 0, 'items container should not have elements');
 
         formArray.addEventListener('rendered', function() {
+          if (event.detail.is !== 'at-form-array') return;
+
           assert.equal(schemaHelpers.areEqual(formArray.schema, getSchema()), true, 'schema not set correctly');
           assert.equal(schemaHelpers.areEqual(formArray.value, getData()), true, 'value not set correctly');
           assert.equal(Polymer.dom(itemsContainer).children.length, 4, 'items container should not have elements');
@@ -688,7 +697,10 @@
 
       function getData() {
         return [{
-
+          text1: "",
+            text2: "",
+            text3: "text3 lorem ipsum",
+            text4: "text4 lorem ipsum"
         },
         {
           text1: "",
@@ -722,7 +734,9 @@
           eventCount += 1;
         });
 
-        function assertStateAfterFirstRender() {
+        function assertStateAfterFirstRender(event) {
+          if (event.detail.is !== 'at-form-array') return;
+          
           formArray.removeEventListener('rendered', assertStateAfterFirstRender);
 
           var initialSchema = formArray.properties.schema.value();
@@ -735,7 +749,9 @@
           formArray.schema = stringSchema;
         }
 
-        function assertStateAfterSecondRender() {
+        function assertStateAfterSecondRender(event) {
+          if (event.detail.is !== 'at-form-array') return;
+
           formArray.removeEventListener('rendered', assertStateAfterSecondRender);
 
           assert.equal(schemaHelpers.areEqual(formArray.schema, getSchema()), true, 'schema not set correctly');
@@ -805,7 +821,6 @@
         formArray.value = stringData;
       });
 
-
       test('schema is string, data is object', function(done) {
         var formArray = fixture('propertyTests');
         var itemsContainer = formArray.$.itemsContainer;
@@ -815,7 +830,9 @@
           eventCount += 1;
         });
 
-        function assertStateAfterFirstRender() {
+        function assertStateAfterFirstRender(event) {
+          if (event.detail.is !== 'at-form-array') return;
+
           formArray.removeEventListener('rendered', assertStateAfterFirstRender);
 
           var initialSchema = formArray.properties.schema.value();
@@ -827,7 +844,9 @@
           formArray.schema = stringSchema;
         }
 
-        function assertStateAfterSecondRender() {
+        function assertStateAfterSecondRender(event) {
+          if (event.detail.is !== 'at-form-array') return;
+
           assert.equal(schemaHelpers.areEqual(formArray.schema, getSchema()), true, 'schema not set correctly');
           assert.equal(schemaHelpers.areEqual(formArray.value, getData()), true, 'value not set correctly');
           assert.equal(Polymer.dom(itemsContainer).children.length, 4, 'items container should not have elements');
@@ -905,7 +924,9 @@
           eventCount += 1;
         });
 
-        function assertStateAfterFirstRender() {
+        function assertStateAfterFirstRender(event) {
+          if (event.detail.is !== 'at-form-array') return;
+
           formArray.removeEventListener('rendered', assertStateAfterFirstRender);
 
           var initialSchema = formArray.properties.schema.value();
@@ -997,7 +1018,9 @@
           eventCount += 1;
         });
 
-        function assertStateAfterFirstRender() {
+        function assertStateAfterFirstRender(event) {
+          if (event.detail.is !== 'at-form-array') return;
+
           formArray.removeEventListener('rendered', assertStateAfterFirstRender);
 
           var initialSchema = formArray.properties.schema.value();
@@ -1152,6 +1175,8 @@
         assert.equal(Polymer.dom(itemsContainer).children.length, 0, 'items container should not have elements');
 
         formArray.addEventListener('rendered', function() {
+          if (event.detail.is !== 'at-form-array') return;
+
           assert.equal(schemaHelpers.areEqual(formArray.schema, getSchema()), true, 'schema not set correctly');
           assert.equal(schemaHelpers.areEqual(formArray.value, getData1()), true, 'value not set correctly');
           assert.equal(Polymer.dom(itemsContainer).children.length, 4, 'items container should not have elements');
@@ -1280,7 +1305,9 @@
 
         var itemsContainer = formArray.$.itemsContainer;
 
-        function assertStateAfterFirstRender() {
+        function assertStateAfterFirstRender(event) {
+          if (event.detail.is !== 'at-form-array') return;
+
           formArray.removeEventListener('rendered', assertStateAfterFirstRender);
 
           assert.equal(schemaHelpers.areEqual(formArray.schema, { items: { properties: { value: { type: "string", title: "Value" } } } }), true, 'schema not set correctly');
