@@ -513,7 +513,7 @@
         assert.equal(schemaHelpers.areEqual(formArray.value, []), true, 'value not set correctly');
         assert.equal(Polymer.dom(itemsContainer).children.length, 0, 'items container should not have elements');
 
-        formArray.addEventListener('rendered', function() {
+        formArray.addEventListener('rendered', function(event) {
           if (event.detail.is !== 'at-form-array') return;
 
           assert.equal(schemaHelpers.areEqual(formArray.schema, getSchema()), true, 'schema not set correctly');
@@ -597,7 +597,7 @@
         assert.equal(schemaHelpers.areEqual(formArray.value, []), true, 'value not set correctly');
         assert.equal(Polymer.dom(itemsContainer).children.length, 0, 'items container should not have elements');
 
-        formArray.addEventListener('rendered', function() {
+        formArray.addEventListener('rendered', function(event) {
           if (event.detail.is !== 'at-form-array') return;
 
           assert.equal(schemaHelpers.areEqual(formArray.schema, getSchema()), true, 'schema not set correctly');
@@ -1174,7 +1174,7 @@
         assert.equal(schemaHelpers.areEqual(formArray.value, []), true, 'value not set correctly');
         assert.equal(Polymer.dom(itemsContainer).children.length, 0, 'items container should not have elements');
 
-        formArray.addEventListener('rendered', function() {
+        formArray.addEventListener('rendered', function(event) {
           if (event.detail.is !== 'at-form-array') return;
 
           assert.equal(schemaHelpers.areEqual(formArray.schema, getSchema()), true, 'schema not set correctly');
