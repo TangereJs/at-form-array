@@ -805,6 +805,8 @@
       _createItemHtmlFromSchema: function(properties, item, position) {
         var self = this;
         var resultHtml = document.createElement('at-form-complex');
+        document.body.appendChild(resultHtml);
+        document.body.removeChild(resultHtml);
 
         // form-array passes its value of autoValidate to its contained elements
         // this enables at-core-form to control autoValidate value for elements contained inside form-array
