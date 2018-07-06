@@ -741,7 +741,7 @@
 
           var initialSchema = formArray.properties.schema.value();
 
-          assert.equal(schemaHelpers.areEqual(formArray.schema, initialSchema), true, `schema not set correctly. expected ${JSON.stringify(formArray.schema)} to equal ${JSON.stringify(initialSchema)}`);
+          assert.equal(schemaHelpers.areEqual(formArray.schema, initialSchema), true, 'schema not set correctly');
           assert.equal(schemaHelpers.areEqual(formArray.value, getData()), true, 'value not set correctly');
           assert.equal(Polymer.dom(itemsContainer).children.length, 4, 'items container should not have elements');
 
