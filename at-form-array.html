@@ -353,9 +353,7 @@
             self.toggleClass('vertical', false, itemContainer);
           });
           items.forEach(function(item) {
-            self.toggleClass('horizontal', true, item);
-            self.toggleClass('vertical', false, item);
-            item._layout = 'horizontal';
+            item.layout = 'horizontal';
             item.hideLabelsForElements();
           });
           // itemActionsContainers.forEach(function(itemActionsContainer, index) {
@@ -367,9 +365,7 @@
             self.toggleClass('vertical', true, itemContainer);
           });
           items.forEach(function(item) {
-            self.toggleClass('horizontal', false, item);
-            self.toggleClass('vertical', true, item);
-            item._layout = 'vertical';
+            item.layout = 'vertical';
             item.showLabelsForElements();
           });
           // itemActionsContainers.forEach(function(itemActionsContainer, index) {
@@ -688,7 +684,6 @@
             // create new html "item-container" if needed
             newItemHtml = this._createNewItemContainerHtml(item, valueArrIndex);
             Polymer.dom(this.$.itemsContainer).appendChild(newItemHtml);
-
           }
         }
         
@@ -714,7 +709,6 @@
           } else {
             elt.addEventListener('rendered', function(event) {
               event.stopPropagation();
-              
               unrenderedRowsCount -= 1;
               if (unrenderedRowsCount != 0) return;
               // event has to be async because value-changed has to be fired first
@@ -812,7 +806,8 @@
         // this enables at-core-form to control autoValidate value for elements contained inside form-array
         resultHtml.autoValidate = this.autoValidate;
 
-        resultHtml._layout = self.layout;
+        resultHtml._isFormArrayRow = true;
+        resultHtml.layout = self.layout;
         var rules = [];
         if (self.schema.rules) {
           rules = this.schema.rules;
@@ -827,10 +822,8 @@
         resultHtml._clearUIValidState();
         Polymer.dom(resultHtml).setAttribute('data-position', position);
         Polymer.dom(resultHtml).classList.add('item');
-        Polymer.dom(resultHtml).classList.add(self.layout);
-        Polymer.dom(resultHtml).classList.add('layout');
         Polymer.dom(resultHtml).classList.add('flex');
-        resultHtml._layout = self.layout;
+        resultHtml.layout = self.layout;
         resultHtml.disabled = self.disabled;
 
         resultHtml.addEventListener('value-changed', function(event) {
