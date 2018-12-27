@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>at-form-array demo page</title>
+    <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
+    <link rel="import" href="../../at-theme/at-theme.html" />
+    <link rel="import" href="../at-form-array.html" />
+    
+    <style is="custom-style">
+      .demo-container {
+        margin-top: 32px;
+
+        border-bottom: 1px solid #0000007F;
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="demo-container">
+      <h3>addLabel is not set, disableSort is false</h3>
+      <at-form-array id="elt1"></at-form-array>
+    </div>
+
+    <div class="demo-container">
+      <h3>addLabel is set, disableSort is false</h3>
+      <at-form-array id="elt2" add-label="Add new record"></at-form-array>
+    </div>
+
+    <div class="demo-container">
+      <h3>addLabel is not set, disableSort is true</h3>
+      <at-form-array id="elt3" disable-sort></at-form-array>
+    </div>
+
+    <div class="demo-container">
+      <h3>addLabel is set, disableSort is true</h3>
+      <at-form-array id="elt4" add-label="Add new record" disable-sort></at-form-array>
+    </div>
+
+    <script>
+      document.addEventListener("WebComponentsReady", function() {
+        var schema = {
+          properties: {
+            text1: {
+              type: "string"
+            },
+            text2: {
+              type: "string"
+            },
+            text3: {
+              type: "string"
+            }
+          }
+        };
+
+        var elt = document.getElementById("elt1");
+        elt.schema = schema;
+
+        var elt = document.getElementById("elt2");
+        elt.schema = schema;
+
+        var elt = document.getElementById("elt3");
+        elt.schema = schema;
+
+        var elt = document.getElementById("elt4");
+        elt.schema = schema;
+      });
+    </script>
+  </body>
+</html>

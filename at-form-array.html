@@ -4,6 +4,7 @@
 <link rel="import" href="../at-rule-engine/at-rule-engine.html">
 <link rel="import" href="../at-form-complex/at-form-complex.html">
 <link rel="import" href="../at-i18n/at-i18n-behavior.html">
+<link rel="import" href="../at-carbon-button/at-carbon-button.html">
 <link rel="import" href="../at-carbon-icon-button/at-carbon-icon-button.html">
 <link rel="import" href="../at-form-behaviors/at-form-behaviors.html">
 <link rel="import" href="../iron-label/iron-label.html">
@@ -22,6 +23,10 @@
 
         --at-form-complex-form-element-min-height: 84px;
         --at-form-complex-layout-horizontal-form-element-min-height: 64px;
+      }
+
+      :host [hidden] {
+        display: none !important;
       }
 
       .header-warpper-inner {
@@ -57,6 +62,9 @@
       <iron-label id="label">{{label}}</iron-label>
       <div class="contentContainer" class="at-content-container">
         <div id="schemaAssigned" class="hidden">
+          <div>
+            <at-carbon-button id="addItemBtn_top" icon="now:plus" label="[[addLabel]]" color="blue"></at-carbon-button>
+          </div>
           <div id="headerWrapper">
             <div class="header-warpper-inner">
               <div id="headerContainer" class="horizontal layout center flex">
@@ -66,7 +74,7 @@
           </div>
           <div id="itemsContainer" class="items-container vertical layout"></div>
           <div>
-            <at-carbon-icon-button id="addItemBtn" icon="now:plus"></at-carbon-icon-button>
+            <at-carbon-button hidden$="[[!_isAddItemBtnBottomVisible(value)]]" id="addItemBtn_bottom" icon="now:plus" label="[[addLabel]]" color="blue"></at-carbon-button>
           </div>
         </div>
         <div id="schemaNotAssigned">Schema not assigned.</div>
@@ -196,6 +204,17 @@
           observer: '_layoutChanged',
           xtype: 'enum',
           xvaluelist: 'vertical,horizontal'
+        },
+
+        addLabel: {
+          type: String,
+          value: ''
+        },
+
+        disableSort: {
+          type: Boolean,
+          value: false,
+          observer: '_disableSortChanged'
         }
       },
       $meta: [{
@@ -217,9 +236,20 @@
         this.toggleClass("hidden", newValue, this.$.label);
       },
 
+      _isAddItemBtnBottomVisible: function(value) {
+        var result = this._isArray(value) && value.length > 5;
+        console.log('showButton addItemBtn_bottom = ' + result);
+        
+        return result;
+      },
+
       ready: function() {
         var self = this;
-        this.$.addItemBtn.addEventListener('tap', function(event) {
+        this.$.addItemBtn_top.addEventListener('tap', function(event) {
+          event.stopPropagation();
+          self._addNewItem();
+        });
+        this.$.addItemBtn_bottom.addEventListener('tap', function(event) {
           event.stopPropagation();
           self._addNewItem();
         });
@@ -241,8 +271,8 @@
         }
 
         // disable / hide the add button
-        var addItemBtn = this.$.addItemBtn;
-        this.toggleClass('hidden', newValue, addItemBtn);
+        this.toggleClass('hidden', newValue, this.$.addItemBtn_top);
+        this.toggleClass('hidden', newValue, this.$.addItemBtn_bottom);
 
         // disable / hide the reorder/remote item(s) buttons
         var itemActionsContainers = Polymer.dom(this.$.itemsContainer).querySelectorAll('.item-actions-container');
@@ -472,8 +502,24 @@
 
 
       focus: function() {
-        var addItemBtn = this.$.addItemBtn;
+        var addItemBtn = this.$.addItemBtn_top;
         addItemBtn.focus();
+      },
+
+      _disableSortChanged: function(newValue, oldValue) {
+        var selector = "at-carbon-icon-button[data-action-type=moveup]";
+        var buttons = Polymer.dom(this.root).querySelectorAll(selector);
+        var toggleAttribute = this.toggleAttribute;
+        
+        Array.prototype.forEach.call(buttons, function(button) {
+          toggleAttribute("hidden", newValue, button);
+        });
+
+        selector = "at-carbon-icon-button[data-action-type=movedown]";
+        buttons = Polymer.dom(this.root).querySelectorAll(selector);
+        Array.prototype.forEach.call(buttons, function(button) {
+          toggleAttribute("hidden", newValue, button);
+        });
       },
 
       _addNewItem: function() {
@@ -499,6 +545,12 @@
         if (itemContainer) {
           this._updateItemActionButtons(itemContainer, position - 1, position + 1);
         }
+
+        // show addItemBtn on bottom if necessary
+        var showButton = this.value.length > 5;
+        console.log('showButton addItemBtn_bottom = ' + showButton);
+        
+        this.toggleAttribute("hidden", !showButton, this.$.addItemBtn_bottom);
 
         this._fireValueChangedEvent(this.value);
       },
@@ -535,6 +587,10 @@
           // update buttons for last element
           this._updateItemActionButtons(itemContainer, position - 1, valueLength);
         }
+
+        // hide addItemBtn on bottom if necessary
+        var showButton = this.value.length <= 5;
+        this.toggleAttribute("hidden", showButton, this.$.addItemBtn_bottom);
 
         this._fireValueChangedEvent(this.value);
       },
@@ -750,6 +806,7 @@
         }
         Polymer.dom(moveUpBtn).setAttribute('data-action-type', 'moveup');
         Polymer.dom(moveUpBtn).setAttribute('data-position', position);
+        this.toggleAttribute('hidden', this.disableSort, moveUpBtn);
         moveUpBtn.addEventListener('click', function(event) {
           event.stopPropagation();
           var position = self._getPosition(event.currentTarget);
@@ -769,6 +826,7 @@
         }
         Polymer.dom(moveDownBtn).setAttribute('data-action-type', 'movedown');
         Polymer.dom(moveDownBtn).setAttribute('data-position', position);
+        this.toggleAttribute('hidden', this.disableSort, moveDownBtn);
         moveDownBtn.addEventListener('click', function(event) {
           event.stopPropagation();
           var position = self._getPosition(event.currentTarget);
@@ -780,7 +838,7 @@
         // create remove button
         // ------------------------------
         var removeBtn = document.createElement('at-carbon-icon-button');
-        removeBtn.icon = "now:delete";
+        removeBtn.icon = "now:cancel";
         removeBtn.title = 'Remove';
         Polymer.dom(removeBtn).classList.add('action-button');
         Polymer.dom(removeBtn).setAttribute('data-action-type', 'remove');
